@@ -9,6 +9,7 @@ module com.ctestwizard {
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
+    requires org.antlr.antlr4.runtime;
 
     opens com.ctestwizard to javafx.fxml;
     exports com.ctestwizard;
