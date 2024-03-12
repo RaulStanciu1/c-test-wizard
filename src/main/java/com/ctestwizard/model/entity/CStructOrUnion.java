@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CStructOrUnion implements CElement{
-    private final String name;
+    private String name;
     private final List<CElement> members;
-    public CStructOrUnion(String name){
-        this.name = name;
-        this.members = new ArrayList<>();
+    public CStructOrUnion(CStructOrUnion obj){
+        this.name = obj.name;
+        this.members = obj.members;
     }
     public CStructOrUnion(String name, List<CElement> members){
         this.name= name;
@@ -17,11 +17,11 @@ public class CStructOrUnion implements CElement{
     public String getName(){
         return this.name;
     }
+    public void setName(String name){
+        this.name = name;
+    }
     public List<CElement> getMembers(){
         return this.members;
-    }
-    public void addMember(CElement newMember){
-        this.members.add(newMember);
     }
 
     public String toString(){

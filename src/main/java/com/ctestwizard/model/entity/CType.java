@@ -10,17 +10,20 @@ public class CType implements CElement{
     private final int numberOfPointers;
     private final List<Number> arraySpecifiers;
     public CType(String typeName, String variableName){
-        String[] keywords = {"union","struct","enum"};
+        int numberOfPointers1 = 0;
+        String[] keywords = {"union","struct","enum","unsigned","signed"};
         StringBuilder tmpTypeName = new StringBuilder(typeName);
         for(String keyword : keywords){
             int index = tmpTypeName.indexOf(keyword);
             if(index != -1){
                 int insertIndex = index + keyword.length();
-                tmpTypeName.insert(insertIndex,' ');
+                tmpTypeName.insert(insertIndex," ");
             }
         }
         this.name = tmpTypeName.toString();
-        this.numberOfPointers = variableName.lastIndexOf("*")+1;
+        if(variableName.startsWith("*")){
+            numberOfPointers1 = variableName.lastIndexOf("*")+1;
+        }
         this.arraySpecifiers = new ArrayList<>();
         int index  = variableName.indexOf('[');
         if(index != -1){
@@ -32,7 +35,15 @@ public class CType implements CElement{
                 long num = Integer.parseInt(matcher.group(1));
                 arraySpecifiers.add(num);
             }
+            if(arraySpecifiers.isEmpty()){
+                index = variableName.indexOf("[]");
+                while(index != -1){
+                    numberOfPointers1++;
+                    index = variableName.indexOf("[]",index + 2);
+                }
+            }
         }
+        this.numberOfPointers = numberOfPointers1;
     }
 
     public String getName() {

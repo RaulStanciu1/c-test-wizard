@@ -1,6 +1,7 @@
 package com.ctestwizard.model.entity;
 
-public class CTypedef {
-    private CElement initialType;
-    private String typedefName;
+public record CTypedef(String initialType, String typedefName) {
+    public String toString(){
+        return initialType+":"+typedefName;
+    }
 }

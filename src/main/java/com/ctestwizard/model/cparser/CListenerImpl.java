@@ -10,19 +10,310 @@ import java.util.List;
 public class CListenerImpl extends CBaseListener {
     private final List<CStructOrUnion> structOrUnionList;
     private final List<CFunction> localFunctions;
+    private final List<CEnum> enumList;
+    private final List<CFunction> externalFunctions;
+    private final List<CVariable> globals;
+    private final List<CVariable> externalGlobals;
     public CListenerImpl(){
         this.structOrUnionList = new ArrayList<>();
         this.localFunctions = new ArrayList<>();
+        this.enumList = new ArrayList<>();
+        this.externalFunctions = new ArrayList<>();
+        this.globals = new ArrayList<>();
+        this.externalGlobals = new ArrayList<>();
     }
 
-    @Override public void enterDeclaration(CParser.DeclarationContext ctx) {
-        //TODO: Implement
+    /**
+     * Function that transforms a function prototype into a CFunction object
+     * @param definitionContext The context of the name and parameters
+     * @param typeContext The context of the function return type
+     */
+    public void handleFunctionPrototype(CParser.DeclaratorContext definitionContext, List<CParser.DeclarationSpecifierContext> typeContext){
+        /*
+        Check if the return type contains pointers
+         */
+        String functionPointers = "";
+        if(definitionContext.pointer()!= null){
+            functionPointers = definitionContext.pointer().getText();
+        }
+        String functionName = definitionContext.directDeclarator().directDeclarator().getText();
+        List<CElement> functionParameters = new ArrayList<>();
+        StringBuilder functionReturnType = new StringBuilder();
+        boolean isInline = false;
+        CStorageClass functionStorageClass = CStorageClass.NONE;
+        /*
+        Function has parameters
+         */
+        if(definitionContext.directDeclarator().parameterTypeList() != null){
+            int index = 1; // Index used for parameters without name
+            List<CParser.ParameterDeclarationContext> _ctx = definitionContext
+                    .directDeclarator().parameterTypeList().parameterList().parameterDeclaration();
+            for(CParser.ParameterDeclarationContext parameterCtx : _ctx){
+                String parameterType;
+                String parameterName;
+                CType parameterCType;
+                CVariable parameter;
+                /*
+                Parameter has a name
+                 */
+                if(parameterCtx.declarationSpecifiers() != null){
+                    parameterName = parameterCtx.declarator().getText();
+                    parameterType = parameterCtx.declarationSpecifiers().getText();
+                    parameterCType = new CType(parameterType,parameterName);
+                    parameter = new CVariable(parameterCType,ListenerUtil.getVariableName(parameterName));
+                }
+                /*
+                Parameter has no name
+                 */
+                else{
+                    parameterType = parameterCtx.declarationSpecifiers2().getText();
+                    /*
+                    Parameter has array specifiers or pointers
+                     */
+                    if(parameterCtx.abstractDeclarator()!= null){
+                        parameterName = parameterCtx.abstractDeclarator().getText();
+                        /*
+                        Better and more readable replacement
+                         */
+                        parameterName = parameterName.replace("[]","*");
+                        parameterName = parameterName + "param_"+ index;
+                    }
+                    else{
+                        parameterName = "param_"+index;
+                    }
+                    index ++;
+                    parameterCType = new CType(parameterType, parameterName);
+                    parameter = new CVariable(parameterCType,ListenerUtil.getVariableName(parameterName));
+                }
+                functionParameters.add(parameter);
+            }
+        }
+        for (CParser.DeclarationSpecifierContext ctx : typeContext) {
+            /*
+            Extracting only the relevant storage class specifiers
+             */
+            functionStorageClass = switch (ctx.getText()) {
+                case "extern" -> CStorageClass.EXTERN;
+                case "static" -> CStorageClass.STATIC;
+                default -> functionStorageClass;
+            };
+            switch(ctx.getText()){
+                /*
+                Ignoring keywords unrelated to the return type
+                 */
+                case "extern", "static", "auto","_Thread_local":
+                    break;
+                case "inline":
+                    isInline = true;
+                    break;
+                case "typedef": //Typedef means there is no function prototype, terminate function
+                    return;
+                default:
+                    functionReturnType.append(ctx.getText()).append(" ");
+            }
+        }
+        functionReturnType.append(functionPointers);
+        this.externalFunctions.add(
+                new CFunction(functionStorageClass,isInline,functionReturnType.toString(),functionName,functionParameters));
     }
 
-    @Override public void enterFunctionDefinition(CParser.FunctionDefinitionContext ctx) {
-        //TODO: Implement
+    /**
+     * Due to the implementation of the C Antlr Grammar, initialized globals are sometimes treated differently in the parser,
+     * This method converts the initialized global into a CVariable object
+     * @param definitionContext The context of the name of the global
+     * @param typeContext The context of the return type and storage class specifier
+     */
+    public void handleInitializedGlobals(CParser.DeclaratorContext definitionContext, List<CParser.DeclarationSpecifierContext> typeContext){
+        String globalName = definitionContext.getText();
+        CStorageClass storageClass = CStorageClass.NONE;
+        StringBuilder globalType = new StringBuilder();
+        for (CParser.DeclarationSpecifierContext declarationSpecifierContext : typeContext) {
+            /*
+            Check for the storage class specifier(e.g. auto, extern, typedef etc.)
+             */
+            if(declarationSpecifierContext.storageClassSpecifier() != null){
+                storageClass = CStorageClass.strToStorageClass(declarationSpecifierContext.storageClassSpecifier().getText());
+            }
+            /*
+            Check if it's a type specifier(e.g. int, float, user-defined type etc.)
+             */
+            else if(declarationSpecifierContext.typeSpecifier()!=null){
+                /*
+                Check if it's a structure or an enum instance (not definition)
+                 */
+                if(declarationSpecifierContext.typeSpecifier().structOrUnionSpecifier()!= null && declarationSpecifierContext.typeSpecifier().structOrUnionSpecifier().structDeclarationList()!= null){
+                    globalType = new StringBuilder(declarationSpecifierContext.typeSpecifier().structOrUnionSpecifier().structOrUnion().getText() + " " +
+                            declarationSpecifierContext.typeSpecifier().structOrUnionSpecifier().Identifier().getText());
+                }
+                else if(declarationSpecifierContext.typeSpecifier().enumSpecifier() != null && declarationSpecifierContext.typeSpecifier().enumSpecifier().enumeratorList()!= null){
+                    globalType = new StringBuilder("enum " + declarationSpecifierContext.typeSpecifier().enumSpecifier().Identifier().getText());
+                }else{
+                    globalType.append(" ").append(declarationSpecifierContext.typeSpecifier().getText());
+                }
+            }
+        }
+        CType globalCType = new CType(globalType.toString(),globalName);
+        CVariable global = new CVariable(globalCType,ListenerUtil.getVariableName(globalName));
+        if(storageClass == CStorageClass.EXTERN){
+            this.externalGlobals.add(global);
+        }else{
+            this.globals.add(global);
+        }
+
     }
 
+    /**
+     * Unimplemented method for function pointers (implementation for future development)
+     * @param definitionContext - unused
+     * @param typeContext - unused
+     */
+    public void handleFunctionPointer(CParser.DeclaratorContext definitionContext, List<CParser.DeclarationSpecifierContext> typeContext){
+        return; // No support for function pointers yet
+    }
+
+    /**
+     * Method that handles an uninitialized global of a struct or union, converts to a CStructOrUnion object
+     * @param ctx Context of the struct or union type
+     * @param nameCtx Context of the global name
+     * @param storageClass The storage class specifier of the global
+     */
+    public void handleStructOrUnionGlobal(CParser.StructOrUnionSpecifierContext ctx, CParser.DeclarationSpecifierContext nameCtx, CStorageClass storageClass){
+        String type = ctx.structOrUnion().getText()+ " "+ctx.Identifier().getText();
+        String name = nameCtx.getText();
+        CType globalType = new CType(type,name);
+        CVariable global = new CVariable(globalType,ListenerUtil.getVariableName(name));
+        if(storageClass != CStorageClass.EXTERN){
+            this.globals.add(global);
+        }
+        else{
+            this.externalGlobals.add(global);
+        }
+    }
+
+    /**
+     * Method to handle enum globals, converts the enum to a CEnum object
+     * @param ctx Context of the enum type
+     * @param nameCtx Context of the global nam
+     * @param storageClass Storage class specifier of the global
+     */
+    public void handleEnumGlobal(CParser.EnumSpecifierContext ctx, CParser.DeclarationSpecifierContext nameCtx, CStorageClass storageClass){
+        String type = "enum "+ctx.Identifier().getText();
+        String name = nameCtx.getText();
+        CType globalType = new CType(type,name);
+        CVariable global = new CVariable(globalType,ListenerUtil.getVariableName(name));
+        if(storageClass != CStorageClass.EXTERN){
+            this.globals.add(global);
+        }
+        else{
+            this.externalGlobals.add(global);
+        }
+    }
+
+    /**
+     * Method to handle globals that are primitive types, and types with typedef, converts the global to a CVariable object
+     * @param ctxList The context of the global
+     * @param storageClass Storage class specifier of the global
+     */
+    public void handleGlobal(List<CParser.DeclarationSpecifierContext>ctxList,CStorageClass storageClass){
+        StringBuilder type = new StringBuilder();
+        for (int i = 0; i < ctxList.size() -1; i++) {
+            /*
+            Check if the current keyword is a type specifier
+             */
+            if (ctxList.get(i).typeSpecifier() != null) {
+                /*
+                Guard against possible conflict with the methods that handle struct and enums
+                 */
+                if(ctxList.get(i).typeSpecifier().structOrUnionSpecifier() != null || ctxList.get(i).typeSpecifier().enumSpecifier() != null){
+                    return;
+                }
+                type.append(" ").append(ctxList.get(i).typeSpecifier().getText());
+            }
+        }
+        String name = ctxList.get(ctxList.size()-1).getText();
+        CType globalType = new CType(type.toString(),name);
+        CVariable globalVariable = new CVariable(globalType,ListenerUtil.getVariableName(name));
+        if(storageClass == CStorageClass.EXTERN){
+            this.externalGlobals.add(globalVariable);
+        }else{
+            this.globals.add(globalVariable);
+        }
+    }
+
+    /**
+     * Method that checks for uninitialized globals, struct or union definitions, enum definitions and converts them to their respective object
+     * @param ctxList The declaration context
+     */
+    public void handleDeclaration(List<CParser.DeclarationSpecifierContext> ctxList){
+        boolean keywordGuard = false; //Guard for the unsigned and signed keywords for primitive types
+        CStorageClass storageClass = CStorageClass.NONE;
+        for (CParser.DeclarationSpecifierContext declarationSpecifierContext : ctxList) {
+            /*
+            Check for storage class specifier
+             */
+            if (declarationSpecifierContext.storageClassSpecifier() != null) {
+                storageClass = CStorageClass.strToStorageClass(declarationSpecifierContext.storageClassSpecifier().getText());
+            }
+            /*
+            Check if it's a type keyword
+             */
+            else if (declarationSpecifierContext.typeSpecifier() != null) {
+                CParser.TypeSpecifierContext ctx = declarationSpecifierContext.typeSpecifier();
+                /*
+                Check for a struct or union
+                 */
+                if (ctx.structOrUnionSpecifier() != null) {
+                    String typedefName = null;
+                    /*
+                    If it was defined with typedef use only the typedef name
+                     */
+                    if(storageClass == CStorageClass.TYPEDEF){
+                        typedefName = ctxList.get(ctxList.size()-1).getText();
+                    }
+                    handleStructOrUnionSpecifier(ctx.structOrUnionSpecifier(), typedefName);
+                    /*
+                    Check if it's just a struct or union instance
+                     */
+                    if(ctx.structOrUnionSpecifier().structDeclarationList() == null && storageClass != CStorageClass.TYPEDEF){
+                        handleStructOrUnionGlobal(ctx.structOrUnionSpecifier(),ctxList.get(ctxList.size()-1),storageClass);
+                    }
+                }
+                /*
+                Check for an enum
+                 */
+                else if(ctx.enumSpecifier() != null){
+                    String typedefName = null;
+                    /*
+                    If it was defined with typedef, then use only the typedef name
+                     */
+                    if(storageClass == CStorageClass.TYPEDEF){
+                        typedefName = ctxList.get(ctxList.size()-1).getText();
+                    }
+                    handleEnumSpecifier(ctx.enumSpecifier(),typedefName);
+                    /*
+                    Check if it's an instance of an enum
+                     */
+                    if(ctx.enumSpecifier().enumeratorList() == null && storageClass != CStorageClass.TYPEDEF){
+                        handleEnumGlobal(ctx.enumSpecifier(),ctxList.get(ctxList.size()-1),storageClass);
+                    }
+                 /*
+                 Check for user-defined type or primitive type
+                  */
+                }else{
+                    if(storageClass != CStorageClass.TYPEDEF && !keywordGuard){
+                        keywordGuard = true;
+                        handleGlobal(ctxList,storageClass);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Method used to recursively go over every anonymous struct or union inside another structure
+     * @param ctx Context of the current member of the outer structure
+     * @return The member of the structure converted in its respective class (CStructOrUnion, CVariable, CEnum)
+     */
     private CElement getStructOrUnionBodyMember(CParser.StructDeclarationContext ctx){
         CParser.TypeSpecifierContext typeContext = ctx.specifierQualifierList().typeSpecifier();
         CParser.StructDeclaratorListContext nameContext = ctx.structDeclaratorList();
@@ -42,13 +333,12 @@ public class CListenerImpl extends CBaseListener {
                 Anonymous struct or union
              */
             else{
-                CElement tmpElement;
                 List<CElement> anonymousStructOrUnionMembers = new ArrayList<>();
                 String anonymousStructOrUnionName = nameContext.getText();
                 List<CParser.StructDeclarationContext> contextList = typeContext
                         .structOrUnionSpecifier().structDeclarationList().structDeclaration();
                 for(CParser.StructDeclarationContext context : contextList){
-                    String memberType = context.specifierQualifierList().typeSpecifier().getText();
+                    String memberType = context.specifierQualifierList().getText();
                     String memberName = context.structDeclaratorList().getText();
                     /*
                      * Member has a bitfield, parser treats the member name differently
@@ -95,38 +385,171 @@ public class CListenerImpl extends CBaseListener {
         }
     }
 
-    @Override public void enterStructOrUnionSpecifier(CParser.StructOrUnionSpecifierContext ctx) {
+    /**
+     * Method that converts a struct or union to its respective object (CStructOrUnion)
+     * @param ctx The parser tree
+     * @param typedefName A name used in case the struct was defined with the typedef storage class specifier
+     */
+    private void handleStructOrUnionSpecifier(CParser.StructOrUnionSpecifierContext ctx, String typedefName){
+        String structOrUnionName = null;
+        if(typedefName != null){
+            structOrUnionName = typedefName;
+        }
+        else if(ctx.Identifier() != null){
+            structOrUnionName = ctx.structOrUnion().getText()+ " "+ctx.Identifier().getText();
+        }
         /*
-            Condition to filter out:
-            - Instances of a struct or union
-            - Anonymous structs or unions(defined in another struct or with typedef)
-        */
-        if(ctx.structDeclarationList() == null || ctx.Identifier() == null){
+        Check if the structure has a body
+         */
+        if(ctx.structDeclarationList() != null){
+            List<CElement> structOrUnionBody = new ArrayList<>();
+            List<CParser.StructDeclarationContext> structOrUnionBodyCtx =
+                    ctx.structDeclarationList().structDeclaration();
+            for(CParser.StructDeclarationContext context : structOrUnionBodyCtx){
+                String memberType = context.specifierQualifierList().getText();
+                String memberName = context.structDeclaratorList().getText();
+                /*
+                 * Member has a bitfield, parser treats the member name differently
+                 */
+                if(memberName.startsWith(":")){
+                    memberName = context.specifierQualifierList().specifierQualifierList().getText();
+                }
+                CElement tmpMember;
+                /*
+                Check for other structures, or anonymous structure defined locally within the initial structure
+                 */
+                if(memberType.startsWith("union") || memberType.startsWith("struct") || memberType.startsWith("enum")){
+                    tmpMember = getStructOrUnionBodyMember(context);
+                }else{
+                    CType memberCType = new CType(memberType,memberName);
+                    tmpMember = new CVariable(memberCType,ListenerUtil.getVariableName(memberName));
+                }
+                structOrUnionBody.add(tmpMember);
+            }
+            this.structOrUnionList.add(new CStructOrUnion(structOrUnionName,structOrUnionBody));
+        }
+    }
+
+    /**
+     * Method that converts an enum to its respective object (CEnum)
+     * @param ctx The parser tree
+     * @param typedefName Name used in case the enum was defined with the typedef storage class specifier
+     */
+    private void handleEnumSpecifier(CParser.EnumSpecifierContext ctx, String typedefName){
+        String enumName = null;
+        if(typedefName != null){
+            enumName = typedefName;
+        }
+        else if(ctx.Identifier() != null){
+            enumName = ctx.Identifier().getText();
+        }
+        List<String> enumBody;
+        /*
+        Check if the enum has a body(it's a definition and not an instance)
+         */
+        if(ctx.enumeratorList() != null){
+            enumBody = new ArrayList<>();
+            for(CParser.EnumeratorContext context:ctx.enumeratorList().enumerator()){
+                enumBody.add(context.enumerationConstant().getText());
+            }
+            this.enumList.add(new CEnum(enumName,enumBody));
+        }
+    }
+
+    /**
+     * Starting point of the parser for every global, function prototype, struct, union and enum definitions
+     * @param ctx the parse tree
+     */
+    @Override public void enterExternalDeclaration(CParser.ExternalDeclarationContext ctx){
+        /*
+        Skip the case of a local function, treated in enterFunctionDefinition method
+         */
+        if(ctx.functionDefinition() != null){
             return;
         }
-        String structOrUnionName = ctx.Identifier().getText();
-        List<CElement> structOrUnionBody = new ArrayList<>();
-        List<CParser.StructDeclarationContext> structOrUnionBodyCtx =
-                    ctx.structDeclarationList().structDeclaration();
-        for(CParser.StructDeclarationContext context : structOrUnionBodyCtx){
-            String memberType = context.specifierQualifierList().typeSpecifier().getText();
-            String memberName = context.structDeclaratorList().getText();
+        CParser.DeclarationContext ctx2 = ctx.declaration();
+        /*
+            Initialized Global or Function Prototype
+         */
+        if(ctx2.initDeclaratorList() != null){
+            CParser.DeclaratorContext _ctx2 = ctx2.initDeclaratorList().initDeclarator(0).declarator();
             /*
-             * Member has a bitfield, parser treats the member name differently
+            Function Prototype
              */
-            if(memberName.startsWith(":")){
-                memberName = context.specifierQualifierList().specifierQualifierList().getText();
+            if(_ctx2.getText().endsWith(")")){
+                if(!_ctx2.getText().startsWith("(")) {
+                    handleFunctionPrototype(_ctx2, ctx.declaration().declarationSpecifiers().declarationSpecifier());
+                }
+                else{
+                    handleFunctionPointer(_ctx2, ctx.declaration().declarationSpecifiers().declarationSpecifier());
+                }
             }
-            CElement tmpMember;
-            if(memberType.startsWith("union") || memberType.startsWith("struct") || memberType.startsWith("enum")){
-                tmpMember = getStructOrUnionBodyMember(context);
-            }else{
-                CType memberCType = new CType(memberType,memberName);
-                tmpMember = new CVariable(memberCType,ListenerUtil.getVariableName(memberName));
+            /*
+            Initialized Global
+             */
+            else{
+                handleInitializedGlobals(_ctx2,ctx.declaration().declarationSpecifiers().declarationSpecifier());
             }
-            structOrUnionBody.add(tmpMember);
         }
-        this.structOrUnionList.add(new CStructOrUnion(structOrUnionName,structOrUnionBody));
+        /*
+        Uninitialized global, structsOrUnion, enum definitions
+         */
+        else {
+            handleDeclaration(ctx.declaration().declarationSpecifiers().declarationSpecifier());
+        }
+    }
+
+    /**
+     * Starting point of every locally defined function
+     * @param ctx the parse tree
+     */
+    @Override public void enterFunctionDefinition(CParser.FunctionDefinitionContext ctx) {
+        CStorageClass storageClassSpecifier = CStorageClass.NONE;
+        boolean isInline = false;
+        String type = null;
+        String name;
+        List<CElement> parameterList = new ArrayList<>();
+        for(int i = 0; i < ctx.declarationSpecifiers().declarationSpecifier().size(); i++){
+            /*
+            Find the function's storage class specifier(and if it's inline)
+             */
+            switch(ctx.declarationSpecifiers().declarationSpecifier(i).getText()){
+                case "inline":
+                    isInline = true;
+                    break;
+                case "extern":
+                    storageClassSpecifier = CStorageClass.EXTERN;
+                    break;
+                case "static":
+                    storageClassSpecifier = CStorageClass.STATIC;
+                    break;
+                case "auto":
+                    storageClassSpecifier = CStorageClass.AUTO;
+                    break;
+                default:
+                    type = ctx.declarationSpecifiers().declarationSpecifier(i).getText();
+            }
+        }
+        if(ctx.declarator().pointer() != null){
+            type = type + " "+ctx.declarator().pointer().getText();
+        }
+        name = ctx.declarator().directDeclarator().directDeclarator().getText();
+        /*
+        Check if the function has parameters
+         */
+        if(ctx.declarator().directDeclarator().parameterTypeList() != null){
+            List<CParser.ParameterDeclarationContext> context = ctx
+                    .declarator().directDeclarator().parameterTypeList().parameterList().parameterDeclaration();
+            for (CParser.ParameterDeclarationContext parameterDeclarationContext : context) {
+                String parameterType = parameterDeclarationContext.declarationSpecifiers().getText();
+                String parameterName = parameterDeclarationContext.declarator().getText();
+                CType parameterCType = new CType(parameterType, parameterName);
+                parameterName = ListenerUtil.getVariableName(parameterName);
+                CVariable parameter = new CVariable(parameterCType, parameterName);
+                parameterList.add(parameter);
+            }
+        }
+        this.localFunctions.add(new CFunction(storageClassSpecifier,isInline,type,name,parameterList));
     }
 
     public List<CFunction> getLocalFunctions() {
@@ -135,5 +558,21 @@ public class CListenerImpl extends CBaseListener {
 
     public List<CStructOrUnion> getStructOrUnionList() {
         return structOrUnionList;
+    }
+
+    public List<CEnum> getEnumList(){
+        return enumList;
+    }
+
+    public List<CFunction> getExternalFunctions() {
+        return externalFunctions;
+    }
+
+    public List<CVariable> getGlobals(){
+        return globals;
+    }
+
+    public List<CVariable> getExternalGlobals() {
+        return externalGlobals;
     }
 }
