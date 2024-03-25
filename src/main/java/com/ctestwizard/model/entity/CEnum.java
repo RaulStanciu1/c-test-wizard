@@ -1,5 +1,6 @@
 package com.ctestwizard.model.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CEnum implements CElement{
@@ -37,5 +38,18 @@ public class CEnum implements CElement{
         }
         str.append('}');
         return str.toString();
+    }
+
+    @Override
+    public CEnum clone() {
+        try {
+            CEnum clone = (CEnum) super.clone();
+            clone.members = new ArrayList<>(this.members.size());
+            clone.members.addAll(this.members);
+            clone.name = this.name;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

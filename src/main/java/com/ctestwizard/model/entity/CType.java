@@ -6,12 +6,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CType implements CElement{
-    private final String name;
-    private final int numberOfPointers;
-    private final List<Number> arraySpecifiers;
+    private String name;
+    private int numberOfPointers;
+    private List<Number> arraySpecifiers;
     public CType(String typeName, String variableName){
         int numberOfPointers1 = 0;
-        String[] keywords = {"union","struct","enum","unsigned","signed"};
+        String[] keywords = {"union","struct","enum","signed" /*includes unsigned*/};
         StringBuilder tmpTypeName = new StringBuilder(typeName);
         for(String keyword : keywords){
             int index = tmpTypeName.indexOf(keyword);
@@ -20,7 +20,7 @@ public class CType implements CElement{
                 tmpTypeName.insert(insertIndex," ");
             }
         }
-        this.name = tmpTypeName.toString();
+        this.name = tmpTypeName.toString().strip().replaceAll("\\s+"," ");
         if(variableName.startsWith("*")){
             numberOfPointers1 = variableName.lastIndexOf("*")+1;
         }
@@ -58,4 +58,18 @@ public class CType implements CElement{
         return arraySpecifiers;
     }
 
+    public String toString(){
+        return name + "*".repeat(numberOfPointers);
+    }
+
+
+    @Override
+    public CType clone() throws CloneNotSupportedException {
+        CType clone = (CType) super.clone();
+        clone.name = this.name;
+        clone.arraySpecifiers = new ArrayList<>(this.arraySpecifiers.size());
+        clone.arraySpecifiers.addAll(this.arraySpecifiers);
+        clone.numberOfPointers = this.numberOfPointers;
+        return clone;
+    }
 }

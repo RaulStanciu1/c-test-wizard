@@ -7,20 +7,18 @@ import com.ctestwizard.model.entity.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CListenerImpl extends CBaseListener {
-    private final List<CStructOrUnion> structOrUnionList;
-    private final List<CFunction> localFunctions;
-    private final List<CEnum> enumList;
-    private final List<CFunction> externalFunctions;
-    private final List<CVariable> globals;
-    private final List<CVariable> externalGlobals;
+public class CListenerImpl extends CBaseListener implements Cloneable{
+    private List<CElement> structOrUnionList;
+    private List<CFunction> localFunctions;
+    private List<CElement> enumList;
+    private List<CFunction> externalFunctions;
+    private List<CElement> globals;
     public CListenerImpl(){
         this.structOrUnionList = new ArrayList<>();
         this.localFunctions = new ArrayList<>();
         this.enumList = new ArrayList<>();
         this.externalFunctions = new ArrayList<>();
         this.globals = new ArrayList<>();
-        this.externalGlobals = new ArrayList<>();
     }
 
     /**
@@ -60,7 +58,7 @@ public class CListenerImpl extends CBaseListener {
                     parameterName = parameterCtx.declarator().getText();
                     parameterType = parameterCtx.declarationSpecifiers().getText();
                     parameterCType = new CType(parameterType,parameterName);
-                    parameter = new CVariable(parameterCType,ListenerUtil.getVariableName(parameterName));
+                    parameter = new CVariable(parameterCType, CParserUtil.getVariableName(parameterName));
                 }
                 /*
                 Parameter has no name
@@ -83,7 +81,7 @@ public class CListenerImpl extends CBaseListener {
                     }
                     index ++;
                     parameterCType = new CType(parameterType, parameterName);
-                    parameter = new CVariable(parameterCType,ListenerUtil.getVariableName(parameterName));
+                    parameter = new CVariable(parameterCType, CParserUtil.getVariableName(parameterName));
                 }
                 functionParameters.add(parameter);
             }
@@ -112,9 +110,10 @@ public class CListenerImpl extends CBaseListener {
                     functionReturnType.append(ctx.getText()).append(" ");
             }
         }
+        CType functionReturnCType = new CType(functionReturnType.toString(), "");
         functionReturnType.append(functionPointers);
         this.externalFunctions.add(
-                new CFunction(functionStorageClass,isInline,functionReturnType.toString(),functionName,functionParameters));
+                new CFunction(functionStorageClass,isInline,functionReturnCType,functionName,functionParameters));
     }
 
     /**
@@ -125,19 +124,12 @@ public class CListenerImpl extends CBaseListener {
      */
     public void handleInitializedGlobals(CParser.DeclaratorContext definitionContext, List<CParser.DeclarationSpecifierContext> typeContext){
         String globalName = definitionContext.getText();
-        CStorageClass storageClass = CStorageClass.NONE;
         StringBuilder globalType = new StringBuilder();
         for (CParser.DeclarationSpecifierContext declarationSpecifierContext : typeContext) {
             /*
-            Check for the storage class specifier(e.g. auto, extern, typedef etc.)
-             */
-            if(declarationSpecifierContext.storageClassSpecifier() != null){
-                storageClass = CStorageClass.strToStorageClass(declarationSpecifierContext.storageClassSpecifier().getText());
-            }
-            /*
             Check if it's a type specifier(e.g. int, float, user-defined type etc.)
              */
-            else if(declarationSpecifierContext.typeSpecifier()!=null){
+            if(declarationSpecifierContext.typeSpecifier()!=null){
                 /*
                 Check if it's a structure or an enum instance (not definition)
                  */
@@ -153,12 +145,8 @@ public class CListenerImpl extends CBaseListener {
             }
         }
         CType globalCType = new CType(globalType.toString(),globalName);
-        CVariable global = new CVariable(globalCType,ListenerUtil.getVariableName(globalName));
-        if(storageClass == CStorageClass.EXTERN){
-            this.externalGlobals.add(global);
-        }else{
-            this.globals.add(global);
-        }
+        CVariable global = new CVariable(globalCType, CParserUtil.getVariableName(globalName));
+        this.globals.add(global);
 
     }
 
@@ -181,13 +169,8 @@ public class CListenerImpl extends CBaseListener {
         String type = ctx.structOrUnion().getText()+ " "+ctx.Identifier().getText();
         String name = nameCtx.getText();
         CType globalType = new CType(type,name);
-        CVariable global = new CVariable(globalType,ListenerUtil.getVariableName(name));
-        if(storageClass != CStorageClass.EXTERN){
-            this.globals.add(global);
-        }
-        else{
-            this.externalGlobals.add(global);
-        }
+        CVariable global = new CVariable(globalType, CParserUtil.getVariableName(name));
+        this.globals.add(global);
     }
 
     /**
@@ -200,13 +183,8 @@ public class CListenerImpl extends CBaseListener {
         String type = "enum "+ctx.Identifier().getText();
         String name = nameCtx.getText();
         CType globalType = new CType(type,name);
-        CVariable global = new CVariable(globalType,ListenerUtil.getVariableName(name));
-        if(storageClass != CStorageClass.EXTERN){
-            this.globals.add(global);
-        }
-        else{
-            this.externalGlobals.add(global);
-        }
+        CVariable global = new CVariable(globalType, CParserUtil.getVariableName(name));
+        this.globals.add(global);
     }
 
     /**
@@ -232,12 +210,8 @@ public class CListenerImpl extends CBaseListener {
         }
         String name = ctxList.get(ctxList.size()-1).getText();
         CType globalType = new CType(type.toString(),name);
-        CVariable globalVariable = new CVariable(globalType,ListenerUtil.getVariableName(name));
-        if(storageClass == CStorageClass.EXTERN){
-            this.externalGlobals.add(globalVariable);
-        }else{
-            this.globals.add(globalVariable);
-        }
+        CVariable globalVariable = new CVariable(globalType, CParserUtil.getVariableName(name));
+        this.globals.add(globalVariable);
     }
 
     /**
@@ -326,7 +300,7 @@ public class CListenerImpl extends CBaseListener {
             */
             if(typeContext.structOrUnionSpecifier().structDeclarationList() == null){
                 CType instanceType = new CType(typeContext.getText(), nameContext.getText());
-                String instanceName = ListenerUtil.getVariableName(nameContext.getText());
+                String instanceName = CParserUtil.getVariableName(nameContext.getText());
                 return new CVariable(instanceType, instanceName);
             }
             /*
@@ -351,7 +325,7 @@ public class CListenerImpl extends CBaseListener {
                         tmpMember = getStructOrUnionBodyMember(context);
                     }else{
                         CType memberCType = new CType(memberType,memberName);
-                        tmpMember = new CVariable(memberCType,ListenerUtil.getVariableName(memberName));
+                        tmpMember = new CVariable(memberCType, CParserUtil.getVariableName(memberName));
                     }
                     anonymousStructOrUnionMembers.add(tmpMember);
                 }
@@ -422,7 +396,7 @@ public class CListenerImpl extends CBaseListener {
                     tmpMember = getStructOrUnionBodyMember(context);
                 }else{
                     CType memberCType = new CType(memberType,memberName);
-                    tmpMember = new CVariable(memberCType,ListenerUtil.getVariableName(memberName));
+                    tmpMember = new CVariable(memberCType, CParserUtil.getVariableName(memberName));
                 }
                 structOrUnionBody.add(tmpMember);
             }
@@ -506,7 +480,7 @@ public class CListenerImpl extends CBaseListener {
     @Override public void enterFunctionDefinition(CParser.FunctionDefinitionContext ctx) {
         CStorageClass storageClassSpecifier = CStorageClass.NONE;
         boolean isInline = false;
-        String type = null;
+        StringBuilder type = new StringBuilder();
         String name;
         List<CElement> parameterList = new ArrayList<>();
         for(int i = 0; i < ctx.declarationSpecifiers().declarationSpecifier().size(); i++){
@@ -527,11 +501,11 @@ public class CListenerImpl extends CBaseListener {
                     storageClassSpecifier = CStorageClass.AUTO;
                     break;
                 default:
-                    type = ctx.declarationSpecifiers().declarationSpecifier(i).getText();
+                    type.append(ctx.declarationSpecifiers().declarationSpecifier(i).getText());
             }
         }
         if(ctx.declarator().pointer() != null){
-            type = type + " "+ctx.declarator().pointer().getText();
+            type.append(" ").append(ctx.declarator().pointer().getText());
         }
         name = ctx.declarator().directDeclarator().directDeclarator().getText();
         /*
@@ -544,23 +518,24 @@ public class CListenerImpl extends CBaseListener {
                 String parameterType = parameterDeclarationContext.declarationSpecifiers().getText();
                 String parameterName = parameterDeclarationContext.declarator().getText();
                 CType parameterCType = new CType(parameterType, parameterName);
-                parameterName = ListenerUtil.getVariableName(parameterName);
+                parameterName = CParserUtil.getVariableName(parameterName);
                 CVariable parameter = new CVariable(parameterCType, parameterName);
                 parameterList.add(parameter);
             }
         }
-        this.localFunctions.add(new CFunction(storageClassSpecifier,isInline,type,name,parameterList));
+        CType functionReturnType = new CType(type.toString(),"");
+        this.localFunctions.add(new CFunction(storageClassSpecifier,isInline,functionReturnType,name,parameterList));
     }
 
     public List<CFunction> getLocalFunctions() {
         return localFunctions;
     }
 
-    public List<CStructOrUnion> getStructOrUnionList() {
+    public List<CElement> getStructOrUnionList() {
         return structOrUnionList;
     }
 
-    public List<CEnum> getEnumList(){
+    public List<CElement> getEnumList(){
         return enumList;
     }
 
@@ -568,11 +543,57 @@ public class CListenerImpl extends CBaseListener {
         return externalFunctions;
     }
 
-    public List<CVariable> getGlobals(){
+    public List<CElement> getGlobals(){
         return globals;
     }
 
-    public List<CVariable> getExternalGlobals() {
-        return externalGlobals;
+    public void setStructOrUnionList(List<CElement> structOrUnionList) {
+        this.structOrUnionList = structOrUnionList;
+    }
+
+    public void setLocalFunctions(List<CFunction> localFunctions) {
+        this.localFunctions = localFunctions;
+    }
+
+    public void setEnumList(List<CElement> enumList) {
+        this.enumList = enumList;
+    }
+
+    public void setExternalFunctions(List<CFunction> externalFunctions) {
+        this.externalFunctions = externalFunctions;
+    }
+
+    public void setGlobals(List<CElement> globals) {
+        this.globals = globals;
+    }
+
+    @Override
+    public CListenerImpl clone() {
+        try {
+            CListenerImpl clone = (CListenerImpl) super.clone();
+            clone.globals = new ArrayList<>(this.globals.size());
+            for(CElement global : this.globals){
+                clone.globals.add(global.clone());
+            }
+            clone.enumList = new ArrayList<>(this.enumList.size());
+            for(CElement enumEl:this.enumList){
+                clone.enumList.add(enumEl.clone());
+            }
+            clone.structOrUnionList = new ArrayList<>(this.structOrUnionList.size());
+            for(CElement structOrUnion:this.structOrUnionList){
+                clone.structOrUnionList.add(structOrUnion.clone());
+            }
+            clone.externalFunctions = new ArrayList<>(this.externalFunctions.size());
+            for(CFunction externalFunction : this.externalFunctions){
+                clone.externalFunctions.add(externalFunction.clone());
+            }
+            clone.localFunctions = new ArrayList<>(this.localFunctions.size());
+            for(CFunction localFunction:this.localFunctions){
+                clone.localFunctions.add(localFunction.clone());
+            }
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }
