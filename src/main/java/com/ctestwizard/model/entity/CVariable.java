@@ -1,45 +1,37 @@
 package com.ctestwizard.model.entity;
 
 
-public class CVariable implements CElement {
-    private CType type;
-    private String name;
-    private String value;
-    public CVariable(CType type, String name){
-        this.value = "";
-        this.type = type;
-        this.name = name;
-    }
-    public String toString(){
-        StringBuilder variable = new StringBuilder(this.getType().getName()+" ");
-        variable.append("*".repeat(Math.max(0, this.getType().getNumberOfPointers())));
-        if(this.getType().getNumberOfPointers() == 0){
-            variable.append(name);
-        }
-        else{
-            variable.append(" ").append(name);
-        }
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
-        for(Number num : this.getType().getArraySpecifiers()){
-            variable.append('[').append(num.toString()).append(']');
-        }
-        return variable.toString();
+public class CVariable implements CElement {
+    private String type;
+    private String name;
+    private int pointers;
+
+    public List<String> values = new ArrayList<>();
+
+    public CVariable(String type, String name){
+        this.type = type;
+        this.pointers = (int) name.chars().filter(c -> c == '*').count();
+        this.name = name.chars()
+                .filter(c -> c != '*')
+                .mapToObj(c -> String.valueOf((char) c))
+                .collect(Collectors.joining());
     }
 
     @Override
-    public CVariable clone() throws CloneNotSupportedException {
-        CVariable clone = (CVariable) super.clone();
-        clone.type = this.type.clone();
-        clone.name = this.name;
-        return clone;
-    }
-
-    public CType getType() {
-        return type;
-    }
-
-    public void setType(CType type) {
-        this.type = type;
+    public CVariable clone(){
+        try{
+            CVariable clone = (CVariable) super.clone();
+            clone.type = this.type;
+            clone.name = this.name;
+            clone.values = new ArrayList<>();
+            return clone;
+        }catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 
     public String getName() {
@@ -50,11 +42,19 @@ public class CVariable implements CElement {
         this.name = name;
     }
 
-    public String getValue() {
-        return value;
+    public String getType() {
+        return type + "*".repeat(pointers);
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public int getPointers() {
+        return pointers;
+    }
+
+    public void setPointers(int pointers) {
+        this.pointers = pointers;
     }
 }

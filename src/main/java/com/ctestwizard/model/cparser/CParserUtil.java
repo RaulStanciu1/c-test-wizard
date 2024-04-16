@@ -6,25 +6,11 @@ import com.ctestwizard.model.entity.*;
 import java.util.List;
 
 public class CParserUtil {
-    public static String getVariableName(String variable){
-        int index;
-        if(variable.startsWith("*")){
-            index = variable.lastIndexOf('*');
-            if(index != -1){
-                variable = variable.substring(index+1);
-            }
-        }
-        index = variable.indexOf('[');
-        if(index != -1){
-            variable = variable.substring(0,index);
-        }
-        return variable;
-    }
 
-    public static boolean isDefinedStructOrUnion(CType type, List<CElement> structOrUnionList){
+    public static boolean isDefinedStructOrUnion(String type, List<CElement> structOrUnionList){
         for(CElement _structOrUnion : structOrUnionList){
             CStructOrUnion structOrUnion = (CStructOrUnion) _structOrUnion;
-            if(structOrUnion.getName().stripIndent().equals(type.getName().stripIndent())){
+            if(structOrUnion.getName().stripIndent().equals(type)){
                 return true;
             }
         }
@@ -35,17 +21,17 @@ public class CParserUtil {
         CStructOrUnion variableType = null;
         for(CElement _structOrUnion : definitionList){
             CStructOrUnion structOrUnion = (CStructOrUnion) _structOrUnion;
-            if(structOrUnion.getName().stripIndent().equals(var.getType().getName().stripIndent())){
+            if(structOrUnion.getName().stripIndent().equals(var.getType())){
                  variableType = structOrUnion;
             }
         }
         assert variableType != null;
-        return new CStructOrUnionInstance(variableType,var.toString());
+        return new CStructOrUnionInstance(variableType,var.getName());
     }
 
-    public static boolean isEnum(CType var, List<CElement> enumList){
+    public static boolean isEnum(String var, List<CElement> enumList){
         for(CElement enumEl : enumList){
-            if(var.getName().stripIndent().equals(((CEnum)enumEl).getName().stripIndent())){
+            if(var.equals((enumEl).getName())){
                 return true;
             }
         }
@@ -56,37 +42,37 @@ public class CParserUtil {
         CEnum variableType = null;
         for(CElement _enumEl : enumList){
             CEnum enumEl = (CEnum)_enumEl;
-            if(enumEl.getName().stripIndent().equals(var.getType().getName().stripIndent())){
+            if(enumEl.getName().stripIndent().equals(var.getType())){
                 variableType = enumEl;
             }
         }
 
         assert variableType != null;
-        return new CEnumInstance(variableType,var.toString());
+        return new CEnumInstance(variableType,var.getName());
     }
 
-    public static CStructOrUnion convertTypeToStructOrUnion(CType type,List<CElement>structOrUnionList){
+    public static CStructOrUnionInstance convertTypeToStructOrUnionInstance(String name,String type,List<CElement>structOrUnionList){
         CStructOrUnion variableType = null;
         for(CElement _structOrUnion:structOrUnionList){
             CStructOrUnion structOrUnion = (CStructOrUnion) _structOrUnion;
-            if(type.getName().strip().equals(structOrUnion.getName().strip())){
+            if(type.equals(structOrUnion.getName().strip())){
                 variableType = structOrUnion;
             }
         }
         assert variableType != null;
-        return variableType;
+        return new CStructOrUnionInstance(variableType,name+"()");
     }
 
 
-    public static CElement convertTypeToEnum(CType returnType, List<CElement> enumDefinitions) {
+    public static CElement convertTypeToEnumInstance(String name,String returnType, List<CElement> enumDefinitions) {
         CEnum variableType = null;
         for(CElement _enum : enumDefinitions){
             CEnum enumEl = (CEnum)_enum;
-            if(returnType.getName().strip().equals(enumEl.getName().strip())){
+            if(returnType.equals(enumEl.getName().strip())){
                 variableType = enumEl;
             }
         }
         assert variableType != null;
-        return variableType;
+        return new CEnumInstance(variableType,name+"()");
     }
 }

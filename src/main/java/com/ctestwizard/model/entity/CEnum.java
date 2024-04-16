@@ -11,12 +11,12 @@ public class CEnum implements CElement{
         this.members = members;
     }
 
-    public CEnum(CEnum obj){
-        this.name = obj.name;
-        this.members = obj.members;
+    public String getName() {
+        return name;
     }
 
-    public String getName() {
+    @Override
+    public String getType() {
         return name;
     }
 
@@ -29,15 +29,6 @@ public class CEnum implements CElement{
     }
     public void setMembers(List<String>members){
         this.members = members;
-    }
-
-    public String toString(){
-        StringBuilder str = new StringBuilder(name+"{\n");
-        for(String member:members){
-            str.append(member).append("\n");
-        }
-        str.append('}');
-        return str.toString();
     }
 
     @Override

@@ -3,12 +3,12 @@ package com.ctestwizard.model.testentity;
 import com.ctestwizard.model.entity.CElement;
 import com.ctestwizard.model.entity.CFunction;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class TInterface {
+    private final TObject parent;
     private List<CFunction> externalFunc;
     private List<CFunction> localFunc;
     private Map<CElement,TPassing> globals;
@@ -16,9 +16,10 @@ public class TInterface {
     private List<CElement> parameters;
     private CElement output;
     private final Map<CFunction,String> stubCode;
-    public TInterface(List<CFunction> externalFunctions,
+    public TInterface(TObject parent,List<CFunction> externalFunctions,
                       List<CFunction> localFunctions, List<CElement> globals,
                       List<CElement> parameters, CElement output){
+        this.parent = parent;
         this.externalFunc = externalFunctions;
         this.localFunc = localFunctions;
         this.parameters = parameters;
@@ -77,5 +78,9 @@ public class TInterface {
 
     public Map<CElement, TPassing> getUserGlobals() {
         return userGlobals;
+    }
+
+    public TObject getParent() {
+        return parent;
     }
 }

@@ -2,80 +2,54 @@ package com.ctestwizard.model.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CEnumInstance implements CElement{
-    private CEnum type;
+    private CEnum enumType;
     private String name;
-    private List<Integer> arraySpecifiers;
-    private int numberOfPointers;
-    private String value;
+    private int pointers;
+    public List<String> values = new ArrayList<>();
     public CEnumInstance(CEnum type, String instanceStr){
-        this.value = "";
-        String tmpName;
-        this.type = type;
-        this.numberOfPointers = (int) instanceStr.chars().filter(c -> c == '*').count();
+        this.enumType = type;
+        this.pointers = (int) instanceStr.chars().filter(c -> c == '*').count();
 
-        String modifiedString = instanceStr.chars()
+        this.name = instanceStr.chars()
                 .filter(c -> c != '*')
                 .mapToObj(c -> String.valueOf((char) c))
                 .collect(Collectors.joining());
-
-        // Define the pattern for square brackets with numbers inside
-        Pattern pattern = Pattern.compile("\\[(\\d+)]");
-
-        // Use a Matcher to find and extract the numbers in square brackets
-        Matcher matcher = pattern.matcher(modifiedString);
-        List<Integer> extractedNumbers = matcher.results()
-                .map(m -> Integer.parseInt(m.group(1)))
-                .toList();
-
-        // Remove square brackets with numbers from the input string
-        tmpName = matcher.replaceAll("");
-        this.name = tmpName.replaceAll(type.getName(),"");
-
-        this.arraySpecifiers = extractedNumbers;
     }
-
-    public String toString(){
-        return this.type + " "+"*".repeat(numberOfPointers)+" "+name;
-    }
-
-
     @Override
-    public CEnumInstance clone() throws CloneNotSupportedException{
-        CEnumInstance clone = (CEnumInstance)super.clone();
-        clone.name = this.name;
-        clone.type = this.type.clone();
-        clone.numberOfPointers = this.numberOfPointers;
-        clone.arraySpecifiers = new ArrayList<>(this.arraySpecifiers.size());
-        clone.arraySpecifiers.addAll(this.arraySpecifiers);
-        return clone;
+    public CEnumInstance clone(){
+        try{
+            CEnumInstance clone = (CEnumInstance) super.clone();
+            clone.name = this.name;
+            clone.enumType = this.enumType.clone();
+            clone.pointers = this.pointers;
+            clone.values = new ArrayList<>();
+            return clone;
+        }
+        catch(CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 
-    public CEnum getType() {
-        return type;
+    public String getType() {
+        return enumType.getName();
+    }
+    public CEnum getEnumType() {
+        return enumType;
     }
 
     public String getName() {
         return name;
     }
 
-    public List<Integer> getArraySpecifiers() {
-        return arraySpecifiers;
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public int getNumberOfPointers() {
-        return numberOfPointers;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
+    public int getPointers() {
+        return pointers;
     }
 }

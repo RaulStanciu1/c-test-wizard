@@ -10,16 +10,15 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class CParserImpl implements Cloneable {
-    private CListenerImpl listener;
+public class CParserDetector implements Cloneable {
+    private CListenerDetector listener;
     private String filePath;
 
-    public CParserImpl(String filePath){
-        this.listener = new CListenerImpl();
+    public CParserDetector(String filePath){
+        this.listener = new CListenerDetector();
         this.filePath = filePath;
     }
 
@@ -36,11 +35,15 @@ public class CParserImpl implements Cloneable {
         finalizeData();
     }
 
-    public CParserImpl clone() throws CloneNotSupportedException {
-        CParserImpl clone = (CParserImpl) super.clone();
-        clone.filePath = this.filePath;
-        clone.listener = this.listener.clone();
-        return clone;
+    public CParserDetector clone(){
+        try {
+            CParserDetector clone = (CParserDetector) super.clone();
+            clone.filePath = this.filePath;
+            clone.listener = this.listener.clone();
+            return clone;
+        }catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 
     public List<CElement> getStructAndUnionDefinitions() {
@@ -67,7 +70,6 @@ public class CParserImpl implements Cloneable {
         finalizeExternalFunctions();
         finalizeLocalFunctions();
     }
-
     /**
      *  Method that replaces every instance of a struct in another struct to its respective object
      */
@@ -78,14 +80,25 @@ public class CParserImpl implements Cloneable {
             for(CElement member : structOrUnion.getMembers()){
                 if(member instanceof CVariable structMember) {
                     if(CParserUtil.isDefinedStructOrUnion(structMember.getType(),this.getStructAndUnionDefinitions())){
-                        structOrUnion.setMember(CParserUtil.convertVariableToStructOrUnionInstance(structMember,this.getStructAndUnionDefinitions()),index);
-                    }else if(CParserUtil.isEnum(structMember.getType(),this.getEnumDefinitions())){
-                        structOrUnion.setMember(CParserUtil.convertVariableToEnum(structMember,this.getEnumDefinitions()),index);
+                        CElement instanceMember = CParserUtil.convertVariableToStructOrUnionInstance(structMember,this.getStructAndUnionDefinitions());
+                        if(instanceMember.getName().endsWith("]")){
+                            instanceMember = new CArray(instanceMember);
+                        }
+                        structOrUnion.setMember(instanceMember,index);
+                    }else if(CParserUtil.isEnum(structMember.getType(),this.getEnumDefinitions())) {
+                        CElement instanceMember = CParserUtil.convertVariableToEnum(structMember, this.getEnumDefinitions());
+                        if(instanceMember.getName().endsWith("]")){
+                            instanceMember = new CArray(instanceMember);
+                        }
+                        structOrUnion.setMember(instanceMember, index);
+                    }else if(structMember.getName().endsWith("]")){
+                        structOrUnion.setMember(new CArray(structMember),index);
                     }
                 }
                 index ++;
             }
         }
+
     }
 
     private void finalizeLocalGlobals(){
@@ -93,9 +106,17 @@ public class CParserImpl implements Cloneable {
         for(CElement _localGlobal:this.getGlobals()){
             if(_localGlobal instanceof CVariable global){
                 if(CParserUtil.isDefinedStructOrUnion(global.getType(),this.getStructAndUnionDefinitions())){
-                    this.getGlobals().set(index,CParserUtil.convertVariableToStructOrUnionInstance(global,this.getStructAndUnionDefinitions()));
+                    CElement instance = CParserUtil.convertVariableToStructOrUnionInstance(global,this.getStructAndUnionDefinitions());
+                    if(instance.getName().endsWith("]")){
+                        instance = new CArray(instance);
+                    }
+                    this.getGlobals().set(index,instance);
                 }else if(CParserUtil.isEnum(global.getType(),this.getEnumDefinitions())){
-                    this.getGlobals().set(index,CParserUtil.convertVariableToEnum(global,this.getEnumDefinitions()));
+                    CElement instance = CParserUtil.convertVariableToEnum(global,this.getEnumDefinitions());
+                    if(instance.getName().endsWith("]")){
+                        instance = new CArray(instance);
+                    }
+                    this.getGlobals().set(index,instance);
                 }
             }
             index++;
@@ -138,13 +159,16 @@ public class CParserImpl implements Cloneable {
         }
         //Step 3: Convert the return type to its respective object
         for(CFunction externalFunction : this.getExternalFunctionDefinitions()){
-            CElement returnType = externalFunction.getType();
-            if(CParserUtil.isDefinedStructOrUnion((CType)returnType,this.getStructAndUnionDefinitions())){
-                returnType = CParserUtil.convertTypeToStructOrUnion((CType)returnType,this.getStructAndUnionDefinitions());
-            }else if(CParserUtil.isEnum((CType)returnType,this.getEnumDefinitions())){
-                returnType = CParserUtil.convertTypeToEnum((CType)returnType,this.getEnumDefinitions());
+            String returnType = externalFunction.getStrType();
+            CElement returnTypeEl = null;
+            if(CParserUtil.isDefinedStructOrUnion(returnType,this.getStructAndUnionDefinitions())){
+                returnTypeEl = CParserUtil.convertTypeToStructOrUnionInstance(externalFunction.getName(),returnType,this.getStructAndUnionDefinitions());
+            }else if(CParserUtil.isEnum(returnType,this.getEnumDefinitions())){
+                returnTypeEl = CParserUtil.convertTypeToEnumInstance(externalFunction.getName(),returnType,this.getEnumDefinitions());
+            }else{
+                returnTypeEl = new CVariable(returnType, externalFunction.getName()+"()");
             }
-            externalFunction.setType(returnType);
+            externalFunction.setRetType(returnTypeEl);
         }
     }
 
@@ -172,13 +196,16 @@ public class CParserImpl implements Cloneable {
         }
 
         for(CFunction localFunction : this.getLocalFunctionDefinitions()){
-            CElement returnType = localFunction.getType();
-            if(CParserUtil.isDefinedStructOrUnion((CType)returnType,this.getStructAndUnionDefinitions())){
-                returnType = CParserUtil.convertTypeToStructOrUnion((CType)returnType,this.getStructAndUnionDefinitions());
-            }else if(CParserUtil.isEnum((CType)returnType,this.getEnumDefinitions())){
-                returnType = CParserUtil.convertTypeToEnum((CType)returnType,this.getEnumDefinitions());
+            String returnType = localFunction.getStrType();
+            CElement returnTypeEl = null;
+            if(CParserUtil.isDefinedStructOrUnion(returnType,this.getStructAndUnionDefinitions())){
+                returnTypeEl = CParserUtil.convertTypeToStructOrUnionInstance(localFunction.getName(), returnType,this.getStructAndUnionDefinitions());
+            }else if(CParserUtil.isEnum(returnType,this.getEnumDefinitions())){
+                returnTypeEl = CParserUtil.convertTypeToEnumInstance(localFunction.getName(), returnType,this.getEnumDefinitions());
+            }else{
+                returnTypeEl = new CVariable(returnType, localFunction.getName()+"()");
             }
-            localFunction.setType(returnType);
+            localFunction.setRetType(returnTypeEl);
         }
     }
 }

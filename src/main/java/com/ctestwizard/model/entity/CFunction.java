@@ -6,31 +6,20 @@ import java.util.List;
 public class CFunction implements CElement {
     private final CStorageClass storageClassSpecifier;
     private boolean isInline;
-    private CElement type;
+    private CElement retType;
+    private final String strType;
     private String name;
     private List<CElement> parameters;
-    public CFunction(CStorageClass storageClassSpecifier, boolean isInline, CElement type, String name,
+    public CFunction(CStorageClass storageClassSpecifier, boolean isInline, String type, String name,
                      List<CElement> parameters){
         this.storageClassSpecifier = storageClassSpecifier;
         this.isInline = isInline;
-        this.type = type;
+        this.strType = type;
         this.name = name.strip();
         this.parameters = parameters;
     }
     public void setParameters(List<CElement> parameters){
         this.parameters = parameters;
-    }
-    public String toString() {
-        StringBuilder str = new StringBuilder(this.type + " "+(isInline ? "inline" : "") + " " + name);
-        str.append("(");
-        for (CElement element : parameters) {
-            str.append(element).append(",");
-        }
-        if (str.charAt(str.length() - 1) == ',') {
-            str.deleteCharAt(str.length() - 1);
-        }
-        str.append(")");
-        return str.toString();
     }
 
     public CStorageClass getStorageClassSpecifier() {
@@ -41,31 +30,49 @@ public class CFunction implements CElement {
         return isInline;
     }
 
-    public CElement getType() {
-        return type;
+    public CElement getRetType() {
+        return retType;
     }
 
     public String getName() {
         return name;
     }
 
-    public List<CElement> getParameters() {
-        return parameters;
-    }
-    public void setType(CElement type){
-        this.type = type;
+    @Override
+    public String getType() {
+        return retType.getType();
     }
 
     @Override
-    public CFunction clone() throws CloneNotSupportedException {
-        CFunction cFunction = (CFunction) super.clone();
-        cFunction.name = this.name;
-        cFunction.type = this.getType().clone();
-        cFunction.parameters = new ArrayList<>(this.parameters.size());
-        for(CElement parameter : this.parameters){
-            cFunction.parameters.add(parameter.clone());
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<CElement> getParameters() {
+        return parameters;
+    }
+    public void setRetType(CElement type){
+        this.retType = type;
+    }
+
+    public String getStrType() {
+        return strType;
+    }
+
+    @Override
+    public CFunction clone(){
+        try {
+            CFunction cFunction = (CFunction) super.clone();
+            cFunction.name = this.name;
+            cFunction.retType = this.getRetType().clone();
+            cFunction.parameters = new ArrayList<>(this.parameters.size());
+            for (CElement parameter : this.parameters) {
+                cFunction.parameters.add(parameter.clone());
+            }
+            cFunction.isInline = this.isInline;
+            return cFunction;
+        }catch(CloneNotSupportedException e){
+            throw new AssertionError();
         }
-        cFunction.isInline = this.isInline;
-        return cFunction;
     }
 }
