@@ -128,12 +128,12 @@ public class TDriver {
                 interfaceChanged = 1;
             }
             //Compare the local functions in the test object with the local functions in the parser
-            if(TDriverUtils.compareCFunctionList(testObject.getTestInterface().getLocalFunctions(),parser.getLocalFunctionDefinitions())){
+            if(TDriverUtils.compareCFunctionList(testObject.getTestFunction(),testObject.getTestInterface().getLocalFunctions(),parser.getLocalFunctionDefinitions())){
                 testObject.updateLocalFunctions(parser.getLocalFunctionDefinitions());
                 interfaceChanged = 1;
             }
             //Compare the external functions in the test object with the external functions in the parser
-            if(TDriverUtils.compareCFunctionList(testObject.getTestInterface().getExternalFunctions(),parser.getExternalFunctionDefinitions())){
+            if(TDriverUtils.compareCFunctionList(testObject.getTestFunction(),testObject.getTestInterface().getExternalFunctions(),parser.getExternalFunctionDefinitions())){
                 testObject.updateExternalFunctions(parser.getExternalFunctionDefinitions());
                 interfaceChanged = 1;
             }
@@ -152,7 +152,7 @@ public class TDriver {
         //Step 1: Analyze to check for any source file changes
         int interfaceChanged = analyze();
         if(interfaceChanged == 1){
-            throw new Exception("Interface has changed! Please analyze the changes.");
+            //throw new Exception("Interface has changed! Please analyze the changes.");
         }
 
         //Step 2: Create the test driver file from the resource template
