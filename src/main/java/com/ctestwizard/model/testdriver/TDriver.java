@@ -2,7 +2,6 @@ package com.ctestwizard.model.testdriver;
 
 
 import com.ctestwizard.model.cparser.CParserDetector;
-import com.ctestwizard.model.testentity.TCase;
 import com.ctestwizard.model.testentity.TObject;
 import com.ctestwizard.model.testentity.TProject;
 import org.apache.commons.io.FileUtils;
@@ -43,7 +42,7 @@ public class TDriver {
         if (!sourceFile.exists()) {
             throw new IOException("Source File Cannot be found");
         }
-        File projectDir = new File(projectPath+File.separator+"ctw");
+        File projectDir = new File(projectPath+File.separator+ "ctw");
         if (!projectDir.exists()) {
             if(!projectDir.mkdir()){
                 throw new IOException("Could not create project directory");
@@ -148,11 +147,11 @@ public class TDriver {
         return interfaceChanged;
     }
 
-    public List<TCase> executeTestObject(TObject testObject) throws Exception {
+    public List<TResults> executeTestObject(TObject testObject) throws Exception {
         //Step 1: Analyze to check for any source file changes
         int interfaceChanged = analyze();
         if(interfaceChanged == 1){
-            //throw new Exception("Interface has changed! Please analyze the changes.");
+            throw new Exception("Interface has changed! Please analyze the changes.");
         }
 
         //Step 2: Create the test driver file from the resource template

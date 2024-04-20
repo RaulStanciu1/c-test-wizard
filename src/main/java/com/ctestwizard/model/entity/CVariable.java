@@ -28,6 +28,7 @@ public class CVariable implements CElement {
             clone.type = this.type;
             clone.name = this.name;
             clone.values = new ArrayList<>();
+            clone.values.addAll(this.values);
             return clone;
         }catch (CloneNotSupportedException e) {
             throw new AssertionError();

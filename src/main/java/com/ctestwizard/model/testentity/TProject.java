@@ -4,6 +4,7 @@ import com.ctestwizard.model.cparser.CParserDetector;
 import com.ctestwizard.model.entity.CElement;
 import com.ctestwizard.model.entity.CFunction;
 import com.ctestwizard.model.testdriver.TDriver;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.Serializable;
@@ -21,11 +22,37 @@ public class TProject implements Serializable {
         this.structOrUnionTypes = new ArrayList<>();
         this.enumTypes = new ArrayList<>();
     }
+
     public static TProject newTProject(String sourceFilePath, String projectPath) throws Exception {
         File sourceFile = new File(sourceFilePath);
         if (!sourceFile.exists()) {
             throw new Exception("Source File Cannot be found");
         }
+        //Create the working directory
+        File projectDir = new File(projectPath + File.separator + "ctw");
+
+        if(projectDir.exists()) {
+            FileUtils.deleteDirectory(projectDir);
+        }
+        if (!projectDir.mkdir()) {
+            throw new Exception("Could not create project directory");
+        }
+        //Copy the source file to the project directory
+        File sourceFileCopy = new File(projectDir.getAbsolutePath() + File.separator + "ctw_src.c");
+        FileUtils.copyFile(sourceFile, sourceFileCopy);
+        //Preprocess the source file copy and save it
+        ProcessBuilder processBuilder = new ProcessBuilder("gcc");
+        processBuilder.command().add("-E");
+        processBuilder.command().add(sourceFileCopy.getAbsolutePath());
+        processBuilder.directory(projectDir);
+        processBuilder.command().add("-o");
+        processBuilder.command().add("ctw_src_pre.c");
+        Process process = processBuilder.start();
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            throw new Exception("Preprocessing failed");
+        }
+
         CParserDetector parser = new CParserDetector(sourceFilePath);
         parser.walkParseTree();
         List<TObject> testObjects = new ArrayList<>();
@@ -37,17 +64,15 @@ public class TProject implements Serializable {
         newTestProject.setTestObjects(testObjects);
         newTestProject.setStructOrUnionTypes(parser.getStructAndUnionDefinitions());
         newTestProject.setEnumTypes(parser.getEnumDefinitions());
-        newTestProject.setTestDriver(new TDriver(newTestProject,sourceFilePath, projectPath));
+        newTestProject.setTestDriver(new TDriver(newTestProject, sourceFilePath, projectPath));
 
         return newTestProject;
     }
 
 
-
     public List<TObject> getTestObjects() {
         return testObjects;
     }
-
 
 
     public void setTestObjects(List<TObject> testObjects) {

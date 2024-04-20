@@ -26,6 +26,7 @@ public class CEnumInstance implements CElement{
             clone.enumType = this.enumType.clone();
             clone.pointers = this.pointers;
             clone.values = new ArrayList<>();
+            clone.values.addAll(this.values);
             return clone;
         }
         catch(CloneNotSupportedException e) {

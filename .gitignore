@@ -26,6 +26,4 @@ replay_pid*
 # Antlr Grammar
 antlr
 
-/src/main/resources/ctw
-
-/src/main/resources/*.c
+/src/main/resources/test_project/

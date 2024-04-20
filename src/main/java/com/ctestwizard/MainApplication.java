@@ -3,6 +3,7 @@ package com.ctestwizard;
 import com.ctestwizard.model.entity.CElement;
 import com.ctestwizard.model.entity.CVariable;
 import com.ctestwizard.model.testdriver.TDriverUtils;
+import com.ctestwizard.model.testdriver.TResults;
 import com.ctestwizard.model.testentity.*;
 import com.ctestwizard.view.TableFactory;
 import javafx.application.Application;
@@ -11,10 +12,12 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.List;
+
 public class MainApplication extends Application {
     @Override
     public void start(Stage stage) throws Exception {
-        TProject project = TProject.newTProject("src/main/resources/test.c", "src/main/resources");
+        TProject project = TProject.newTProject("src/main/resources/test_project/test.c", "src/main/resources/test_project");
         TObject object = project.getTestObjects().get(0);
         TInterface testInterface = object.getTestInterface();
         int index = 0;
@@ -43,7 +46,10 @@ public class MainApplication extends Application {
         Button runTest = new Button("Run Test");
         runTest.setOnAction(e -> {
             try {
-                project.getTestDriver().executeTestObject(object);
+                List<TResults> resultsList = project.getTestDriver().executeTestObject(object);
+                for(TResults results : resultsList){
+                    System.out.println(results);
+                }
             } catch (Exception exception) {
                 exception.printStackTrace();
             }

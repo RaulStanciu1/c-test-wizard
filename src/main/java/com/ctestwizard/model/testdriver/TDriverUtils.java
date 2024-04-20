@@ -16,7 +16,7 @@ public class TDriverUtils {
     private static boolean compareEnumInstances(CElement enumInstance, CElement enumDefinition) {
         CEnumInstance enumInstance1 = (CEnumInstance) enumInstance;
         CEnumInstance enumDefinition1 = (CEnumInstance) enumDefinition;
-        return !enumInstance1.getName().equals(enumDefinition1.getName()) || compareEnums(enumInstance1.getEnumType(),enumDefinition1.getEnumType());
+        return !enumInstance1.getName().equals(enumDefinition1.getName()) || compareEnums(enumInstance1.getEnumType(), enumDefinition1.getEnumType());
     }
 
     private static boolean compareEnums(CElement enumDefinition, CElement enumType) {
@@ -49,7 +49,7 @@ public class TDriverUtils {
         return nameMatch || typeMatch || sizeMatch;
     }
 
-    private static boolean compareStructAndUnionInstances(CElement structOrUnionDef, CElement structOrUnionType){
+    private static boolean compareStructAndUnionInstances(CElement structOrUnionDef, CElement structOrUnionType) {
         CStructOrUnionInstance structOrUnionDef1 = (CStructOrUnionInstance) structOrUnionDef;
         CStructOrUnionInstance structOrUnionType1 = (CStructOrUnionInstance) structOrUnionType;
         return !structOrUnionDef.getName().equals(structOrUnionType.getName()) || compareStructAndUnions(structOrUnionDef1.getStructType(), structOrUnionType1.getStructType());
@@ -117,38 +117,34 @@ public class TDriverUtils {
         return false;
     }
 
-    private static boolean compareFunction(CFunction function, CFunction functionDefinition){
-        if(!function.getName().equals(functionDefinition.getName())){
+    private static boolean compareFunction(CFunction function, CFunction functionDefinition) {
+        if (!function.getName().equals(functionDefinition.getName())) {
             return false;
         }
-        if(!function.getStrType().equals(functionDefinition.getStrType())){
+        if (!function.getStrType().equals(functionDefinition.getStrType())) {
             return false;
         }
-        if(function.getParameters().size() != functionDefinition.getParameters().size()){
+        if (function.getParameters().size() != functionDefinition.getParameters().size()) {
             return false;
         }
-        for(int i = 0; i < function.getParameters().size(); i++){
-            if(function.getParameters().get(i) instanceof CVariable var && functionDefinition.getParameters().get(i) instanceof CVariable var1){
-                if(compareVariables(var,var1)){
+        for (int i = 0; i < function.getParameters().size(); i++) {
+            if (function.getParameters().get(i) instanceof CVariable var && functionDefinition.getParameters().get(i) instanceof CVariable var1) {
+                if (compareVariables(var, var1)) {
                     return false;
                 }
-            }
-            else if(function.getParameters().get(i) instanceof CArray array && functionDefinition.getParameters().get(i) instanceof CArray array1){
-                if(compareArrays(array,array1)){
+            } else if (function.getParameters().get(i) instanceof CArray array && functionDefinition.getParameters().get(i) instanceof CArray array1) {
+                if (compareArrays(array, array1)) {
                     return false;
                 }
-            }
-            else if(function.getParameters().get(i) instanceof CStructOrUnionInstance structOrUnion && functionDefinition.getParameters().get(i) instanceof CStructOrUnionInstance structOrUnion1){
-                if(compareStructAndUnionInstances(structOrUnion,structOrUnion1)){
+            } else if (function.getParameters().get(i) instanceof CStructOrUnionInstance structOrUnion && functionDefinition.getParameters().get(i) instanceof CStructOrUnionInstance structOrUnion1) {
+                if (compareStructAndUnionInstances(structOrUnion, structOrUnion1)) {
                     return false;
                 }
-            }
-            else if(function.getParameters().get(i) instanceof CEnumInstance enum1 && functionDefinition.getParameters().get(i) instanceof CEnumInstance enum2){
-                if(compareEnumInstances(enum1,enum2)){
+            } else if (function.getParameters().get(i) instanceof CEnumInstance enum1 && functionDefinition.getParameters().get(i) instanceof CEnumInstance enum2) {
+                if (compareEnumInstances(enum1, enum2)) {
                     return false;
                 }
-            }
-            else{
+            } else {
                 return false;
             }
         }
@@ -158,8 +154,8 @@ public class TDriverUtils {
 
     public static boolean compareCFunction(CFunction testFunction, List<CFunction> localFunctionDefinitions) {
         boolean found = false;
-        for(CFunction localFunction : localFunctionDefinitions){
-            if(compareFunction(testFunction,localFunction)){
+        for (CFunction localFunction : localFunctionDefinitions) {
+            if (compareFunction(testFunction, localFunction)) {
                 found = true;
                 break;
             }
@@ -167,21 +163,21 @@ public class TDriverUtils {
         return !found;
     }
 
-    public static boolean compareCFunctionList(CFunction testFunction,List<CFunction> localFunctions, List<CFunction> localFunctionDefinitions) {
-       //Remove the testFunction from the localFunctionDefinitions list copy
+    public static boolean compareCFunctionList(CFunction testFunction, List<CFunction> localFunctions, List<CFunction> localFunctionDefinitions) {
+        //Remove the testFunction from the localFunctionDefinitions list copy
         List<CFunction> localFunctionDefsCopy = new ArrayList<>(List.copyOf(localFunctionDefinitions));
-        for(CFunction localFunctionDef:localFunctionDefsCopy){
-            if(compareFunction(testFunction,localFunctionDef)){
+        for (CFunction localFunctionDef : localFunctionDefsCopy) {
+            if (compareFunction(testFunction, localFunctionDef)) {
                 localFunctionDefsCopy.remove(localFunctionDef);
                 break;
             }
         }
         //Compare the localFunctions with the localFunctionDefinitions copy
-        if(localFunctions.size() != localFunctionDefsCopy.size()){
+        if (localFunctions.size() != localFunctionDefsCopy.size()) {
             return true;
         }
-        for(int i = 0; i < localFunctions.size(); i++){
-            if(!compareFunction(localFunctions.get(i),localFunctionDefsCopy.get(i))){
+        for (int i = 0; i < localFunctions.size(); i++) {
+            if (!compareFunction(localFunctions.get(i), localFunctionDefsCopy.get(i))) {
                 return true;
             }
         }
@@ -189,38 +185,35 @@ public class TDriverUtils {
     }
 
     public static boolean compareCElementList(Set<CElement> cElements, List<CElement> globals) {
-        if(cElements.size() != globals.size()){
+        if (cElements.size() != globals.size()) {
             return true;
         }
-        for(CElement cElement:cElements){
+        for (CElement cElement : cElements) {
             boolean found = false;
-            for(CElement global:globals){
-                if(cElement instanceof CVariable var && global instanceof CVariable var1){
-                    if(!compareVariables(var,var1)){
+            for (CElement global : globals) {
+                if (cElement instanceof CVariable var && global instanceof CVariable var1) {
+                    if (!compareVariables(var, var1)) {
                         found = true;
                         break;
                     }
-                }
-                else if(cElement instanceof CArray array && global instanceof CArray array1){
-                    if(!compareArrays(array,array1)){
+                } else if (cElement instanceof CArray array && global instanceof CArray array1) {
+                    if (!compareArrays(array, array1)) {
                         found = true;
                         break;
                     }
-                }
-                else if(cElement instanceof CStructOrUnionInstance structOrUnion && global instanceof CStructOrUnionInstance structOrUnion1){
-                    if(!compareStructAndUnionInstances(structOrUnion,structOrUnion1)){
+                } else if (cElement instanceof CStructOrUnionInstance structOrUnion && global instanceof CStructOrUnionInstance structOrUnion1) {
+                    if (!compareStructAndUnionInstances(structOrUnion, structOrUnion1)) {
                         found = true;
                         break;
                     }
-                }
-                else if(cElement instanceof CEnumInstance enum1 && global instanceof CEnumInstance enum2){
-                    if(!compareEnumInstances(enum1,enum2)){
+                } else if (cElement instanceof CEnumInstance enum1 && global instanceof CEnumInstance enum2) {
+                    if (!compareEnumInstances(enum1, enum2)) {
                         found = true;
                         break;
                     }
                 }
             }
-            if(!found){
+            if (!found) {
                 return true;
             }
         }
@@ -281,7 +274,7 @@ public class TDriverUtils {
             functionStub.append("#define ").append(stubbedFunction.getName()).append(" CTW_").append(stubbedFunction.getName()).append("\n");
             FileUtils.writeStringToFile(stubCodeFile, functionStub.toString(), "UTF-8", true);
         }
-        for (CElement userGlobal : testObject.getTestInterface().getGlobals().keySet()) {
+        for (CElement userGlobal : testObject.getTestInterface().getUserGlobals().keySet()) {
             String userGlobalContent = userGlobal.getType() + " " + userGlobal.getName() + ";\n";
             FileUtils.writeStringToFile(stubCodeFile, userGlobalContent, "UTF-8", true);
         }
@@ -360,7 +353,7 @@ public class TDriverUtils {
     public static void compileTestDriverFile(TDriver driver) throws Exception {
         //Compile the test driver file using the given compiler
         ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command(driver.getCompiler(), "ctw" + "/" + "ctw_test_driver.c");
+        processBuilder.command(driver.getCompiler(), "ctw/ctw_test_driver.c");
         //Add the include directories and the linker to the compiler command
         for (String includeDirectory : driver.getIncludeDirectories()) {
             processBuilder.command().add("-I");
@@ -370,7 +363,7 @@ public class TDriverUtils {
             processBuilder.command().add(linker);
         }
         processBuilder.command().add("-o");
-        processBuilder.command().add("ctw" + "/" + "ctw_test_driver");
+        processBuilder.command().add("ctw/ctw_test_driver");
         //Set the current directory to the project path
         processBuilder.directory(new File(driver.getProjectPath()));
         Process process = processBuilder.start();
@@ -379,7 +372,7 @@ public class TDriverUtils {
             throw new Exception("Failed to compile test driver file");
         }
         //Set the file permissions to allow execution
-        File testDriverFile = new File(driver.getProjectPath() + "/" + "ctw" + "/" + "ctw_test_driver.exe");
+        File testDriverFile = new File(driver.getProjectPath() + "/ctw/ctw_test_driver.exe");
         if (!testDriverFile.setExecutable(true)) {
             throw new Exception("Failed to set test driver file permissions");
         }
@@ -388,7 +381,7 @@ public class TDriverUtils {
     public static void runTestDriverFile(TDriver driver) throws Exception {
         //Run the test driver file
         ProcessBuilder processBuilder = new ProcessBuilder(driver.getProjectPath() + "/ctw/ctw_test_driver.exe");
-        File workingDirectory = new File(driver.getProjectPath() + "/" + "ctw");
+        File workingDirectory = new File(driver.getProjectPath() + "/ctw");
         processBuilder.directory(workingDirectory);
         Process process = processBuilder.start();
         int exitCode = process.waitFor();
@@ -397,9 +390,125 @@ public class TDriverUtils {
         }
     }
 
-    public static List<TCase> parseTestDataOutputFile(TObject testObject, TProject parent) {
-        return null;
+    public static List<TResults> parseTestDataOutputFile(TObject testObject, TProject parent) throws Exception {
+        //Step 1: Open the test data output file
+        File testDataOutputFile = new File(parent.getTestDriver().getProjectPath() + File.separator + "ctw" + File.separator + "test_data_output.txt");
+        if (!testDataOutputFile.exists()) {
+            throw new Exception("Test data output file not found");
+        }
+        //Step 2: Create a copy of all the outputs and output globals from every test case in a results list
+        List<TResults> results = new ArrayList<>();
+        for (TCase testCase : testObject.getTestCases()) {
+            List<CElement> outputGlobals = new ArrayList<>();
+            CElement output = testCase.getOutput().clone();
+            for (CElement global : testCase.getOutputGlobals()) {
+                outputGlobals.add(global.clone());
+            }
+            TResults result = new TResults(output, outputGlobals);
+            results.add(result);
+        }
+
+        //Step 3: Go over the file contents line by line and update the results list
+        List<String> fileContents = FileUtils.readLines(testDataOutputFile, "UTF-8");
+        // Test Output data format: <TestCase>.<TestStep> <TestElement> <TestElementValue>
+        for (String line : fileContents) {
+            String[] lineContents = line.split(" ");
+            int testCaseIndex = Integer.parseInt(lineContents[0].split("\\.")[0]);
+            int testStepIndex = Integer.parseInt(lineContents[0].split("\\.")[1]);
+            String elementName = lineContents[1];
+            String elementValue = lineContents[2];
+            TResults result = results.get(testCaseIndex);
+
+            // The return of the function will be represented as <FunctionName>()... in the output file
+            if (elementName.contains("()")) {
+                _handleOutput(result, testStepIndex, elementName, elementValue);
+            } else {
+                _handleGlobalOutput(result, testStepIndex, elementName, elementValue);
+            }
+        }
+        return results;
     }
 
+    private static void _handleOutput(TResults result, int step, String elementName, String elementValue) throws Exception {
+        CElement output = result.getOutput();
+        if (output instanceof CVariable var) {
+            var.values.set(step, elementValue);
+        } else if (output instanceof CEnumInstance enumInstance) {
+            enumInstance.values.set(step, elementValue);
+        } else if (output instanceof CStructOrUnionInstance structOrUnionInstance) {
+            // Check which member of the struct or union is being updated
+            List<String> elementMembers = List.of(elementName.split("\\."));
+            CElement elementRef = structOrUnionInstance;
+            int elementNameIndex = 0;
+            for (int i = 0; i < elementMembers.size(); i++) {
+                if (elementRef instanceof CStructOrUnionInstance structOrUnionInstance1) {
+                    for (CElement member : structOrUnionInstance1.getStructType().getMembers()) {
+                        if (member.getName().equals(elementMembers.get(i))) {
+                            elementRef = member;
+                            break;
+                        }
+                    }
+                } else if (elementRef instanceof CArray array) {
+                    for(CElement element:array.getArrayMembers()){
+                        if(element.getName().equals(elementMembers.get(i))){
+                            elementRef = element;
+                            break;
+                        }
+                    }
+                } else if(elementRef instanceof CVariable var1){
+                    var1.values.set(step,elementValue);
+                    break;
+                } else if(elementRef instanceof CEnumInstance enumInstance1){
+                    enumInstance1.values.set(step,elementValue);
+                    break;
+                }
+                elementNameIndex++;
+            }
+            if(elementNameIndex != elementMembers.size()){
+                throw new Exception("Failed to parse test results");
+            }
+        }
+    }
 
+    private static void _handleGlobalOutput(TResults result, int step, String elementName, String elementValue) throws Exception {
+        for (CElement global : result.getGlobalOutputs()){
+            if (global instanceof CVariable var) {
+                var.values.set(step, elementValue);
+            } else if (global instanceof CEnumInstance enumInstance) {
+                enumInstance.values.set(step, elementValue);
+            } else if (global instanceof CStructOrUnionInstance structOrUnionInstance) {
+                // Check which member of the struct or union is being updated
+                List<String> elementMembers = List.of(elementName.split("\\."));
+                CElement elementRef = structOrUnionInstance;
+                int elementNameIndex = 0;
+                for (int i = 0; i < elementMembers.size(); i++) {
+                    if (elementRef instanceof CStructOrUnionInstance structOrUnionInstance1) {
+                        for (CElement member : structOrUnionInstance1.getStructType().getMembers()) {
+                            if (member.getName().equals(elementMembers.get(i))) {
+                                elementRef = member;
+                                break;
+                            }
+                        }
+                    } else if (elementRef instanceof CArray array) {
+                        for(CElement element:array.getArrayMembers()){
+                            if(element.getName().equals(elementMembers.get(i))){
+                                elementRef = element;
+                                break;
+                            }
+                        }
+                    } else if(elementRef instanceof CVariable var1){
+                        var1.values.set(step,elementValue);
+                        break;
+                    } else if(elementRef instanceof CEnumInstance enumInstance1){
+                        enumInstance1.values.set(step,elementValue);
+                        break;
+                    }
+                    elementNameIndex++;
+                }
+                if(elementNameIndex != elementMembers.size()){
+                    throw new Exception("Failed to parse test results");
+                }
+            }
+        }
+    }
 }

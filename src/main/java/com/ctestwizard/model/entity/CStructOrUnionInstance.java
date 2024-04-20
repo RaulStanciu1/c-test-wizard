@@ -50,6 +50,7 @@ public class CStructOrUnionInstance implements CElement {
             clone.pointers = this.pointers;
             clone.structType = this.structType.clone();
             clone.values = new ArrayList<>();
+            clone.values.addAll(this.values);
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
