@@ -8,10 +8,11 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TDriver {
+public class TDriver implements Serializable {
     private final TProject _parent;
     private final String sourceFilePath;
     private final String projectPath;
@@ -35,7 +36,7 @@ public class TDriver {
      * Analyze the source file for any changes, if changes have been found, update every
      * TObject and TInterface with the new elements added or removed
      */
-    public int analyze() throws IOException, InterruptedException {
+    public int analyze(ConsoleWriter consoleWriter) throws IOException, InterruptedException {
        /*Check if the working directory exists and if it does
         check if the source file copy is the same as the source file*/
         File sourceFile = new File(sourceFilePath);
@@ -59,6 +60,7 @@ public class TDriver {
             processBuilder.command().add("-o");
             processBuilder.command().add("ctw_src_pre.c");
             Process process = processBuilder.start();
+            consoleWriter.redirectOutput(process);
             int exitCode = process.waitFor();
             if(exitCode != 0){
                 throw new IOException("Preprocessing failed");
@@ -79,6 +81,7 @@ public class TDriver {
             processBuilder.command().add("-o");
             processBuilder.command().add("ctw_src_pre.c");
             Process process = processBuilder.start();
+            consoleWriter.redirectOutput(process);
             int exitCode = process.waitFor();
             if(exitCode != 0){
                 throw new IOException("Preprocessing failed");
@@ -93,6 +96,7 @@ public class TDriver {
             processBuilder.command().add("-o");
             processBuilder.command().add("ctw_src_pre.c");
             Process process = processBuilder.start();
+            consoleWriter.redirectOutput(process);
             int exitCode = process.waitFor();
             if(exitCode != 0){
                 throw new IOException("Preprocessing failed");
@@ -147,9 +151,9 @@ public class TDriver {
         return interfaceChanged;
     }
 
-    public List<TResults> executeTestObject(TObject testObject) throws Exception {
+    public List<TResults> executeTestObject(TObject testObject,ConsoleWriter consoleWriter) throws Exception {
         //Step 1: Analyze to check for any source file changes
-        int interfaceChanged = analyze();
+        int interfaceChanged = analyze(consoleWriter);
         if(interfaceChanged == 1){
             throw new Exception("Interface has changed! Please analyze the changes.");
         }
@@ -163,9 +167,9 @@ public class TDriver {
         //Step 5: Generate the test steps file
         TDriverUtils.generateTestStepsFile(testObject,_parent);
         //Step 6: Compile the test driver file
-        TDriverUtils.compileTestDriverFile(this);
+        TDriverUtils.compileTestDriverFile(this,consoleWriter);
         //Step 7: Run the test driver file
-        TDriverUtils.runTestDriverFile(this);
+        TDriverUtils.runTestDriverFile(this,consoleWriter);
         //Step 8: Parse the test data file and return the test cases
         return TDriverUtils.parseTestDataOutputFile(testObject,_parent);
     }

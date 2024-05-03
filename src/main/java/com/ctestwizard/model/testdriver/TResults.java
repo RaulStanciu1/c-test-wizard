@@ -2,11 +2,13 @@ package com.ctestwizard.model.testdriver;
 
 import com.ctestwizard.model.entity.CElement;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class TResults {
+public class TResults implements Serializable {
     private final CElement output;
     private final List<CElement> globalOutputs;
+    public boolean passed;
     public TResults(CElement output, List<CElement> globalOutputs){
         this.output = output;
         this.globalOutputs = globalOutputs;

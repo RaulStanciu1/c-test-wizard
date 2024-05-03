@@ -4,6 +4,7 @@ import com.ctestwizard.model.entity.*;
 import com.ctestwizard.model.testentity.TCase;
 import com.ctestwizard.model.testentity.TObject;
 import com.ctestwizard.model.testentity.TProject;
+import javafx.util.Pair;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -310,11 +311,8 @@ public class TDriverUtils {
                 testDataFileContent.append("ctw_test_step_").append(i).append("_").append(j).append("();\n");
                 testDataFileContent.append("break;\n");
             }
+            testDataFileContent.append("}\n");
         }
-        testDataFileContent.append("default:\n");
-        testDataFileContent.append("break;\n");
-        testDataFileContent.append("}\n");
-        testDataFileContent.append("break;\n");
         testDataFileContent.append("}\n");
         testDataFileContent.append("}\n");
         FileUtils.writeStringToFile(testDataFile, testDataFileContent.toString(), "UTF-8", false);
@@ -350,7 +348,7 @@ public class TDriverUtils {
         FileUtils.writeStringToFile(testStepsFile, testStepsFileContent.toString(), "UTF-8", true);
     }
 
-    public static void compileTestDriverFile(TDriver driver) throws Exception {
+    public static void compileTestDriverFile(TDriver driver,ConsoleWriter consoleWriter) throws Exception {
         //Compile the test driver file using the given compiler
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command(driver.getCompiler(), "ctw/ctw_test_driver.c");
@@ -367,6 +365,8 @@ public class TDriverUtils {
         //Set the current directory to the project path
         processBuilder.directory(new File(driver.getProjectPath()));
         Process process = processBuilder.start();
+        consoleWriter.redirectOutput(process);
+
         int exitCode = process.waitFor();
         if (exitCode != 0) {
             throw new Exception("Failed to compile test driver file");
@@ -378,12 +378,13 @@ public class TDriverUtils {
         }
     }
 
-    public static void runTestDriverFile(TDriver driver) throws Exception {
+    public static void runTestDriverFile(TDriver driver,ConsoleWriter consoleWriter) throws Exception {
         //Run the test driver file
         ProcessBuilder processBuilder = new ProcessBuilder(driver.getProjectPath() + "/ctw/ctw_test_driver.exe");
         File workingDirectory = new File(driver.getProjectPath() + "/ctw");
         processBuilder.directory(workingDirectory);
         Process process = processBuilder.start();
+        consoleWriter.redirectOutput(process);
         int exitCode = process.waitFor();
         if (exitCode != 0) {
             throw new Exception("Failed to run test driver file: Exit code: " + exitCode);
@@ -394,7 +395,7 @@ public class TDriverUtils {
         //Step 1: Open the test data output file
         File testDataOutputFile = new File(parent.getTestDriver().getProjectPath() + File.separator + "ctw" + File.separator + "test_data_output.txt");
         if (!testDataOutputFile.exists()) {
-            throw new Exception("Test data output file not found");
+            throw new Exception("Test data output not generated");
         }
         //Step 2: Create a copy of all the outputs and output globals from every test case in a results list
         List<TResults> results = new ArrayList<>();
@@ -417,30 +418,41 @@ public class TDriverUtils {
             int testStepIndex = Integer.parseInt(lineContents[0].split("\\.")[1]);
             String elementName = lineContents[1];
             String elementValue = lineContents[2];
+            boolean match = lineContents[3].equals("1");
             TResults result = results.get(testCaseIndex);
 
             // The return of the function will be represented as <FunctionName>()... in the output file
             if (elementName.contains("()")) {
-                _handleOutput(result, testStepIndex, elementName, elementValue);
+                _handleOutput(result, testStepIndex, elementName, elementValue, match);
             } else {
-                _handleGlobalOutput(result, testStepIndex, elementName, elementValue);
+                _handleGlobalOutput(result, testStepIndex, elementName, elementValue, match);
             }
         }
         return results;
     }
 
-    private static void _handleOutput(TResults result, int step, String elementName, String elementValue) throws Exception {
+    private static void _handleOutput(TResults result, int step, String elementName, String elementValue, boolean match) throws Exception {
         CElement output = result.getOutput();
-        if (output instanceof CVariable var) {
-            var.values.set(step, elementValue);
-        } else if (output instanceof CEnumInstance enumInstance) {
-            enumInstance.values.set(step, elementValue);
-        } else if (output instanceof CStructOrUnionInstance structOrUnionInstance) {
+        __handleElement(output, step, elementName, elementValue, match);
+    }
+
+    private static void _handleGlobalOutput(TResults result, int step, String elementName, String elementValue, boolean match) throws Exception {
+        for (CElement global : result.getGlobalOutputs()){
+            __handleElement(global,step,elementName,elementValue,match);
+        }
+    }
+
+    private static void __handleElement(CElement element,int step, String elementName, String elementValue, boolean match) throws Exception{
+        if (element instanceof CVariable var) {
+            var.values.set(step, new CValue(elementValue,match ? 1 : 0));
+        } else if (element instanceof CEnumInstance enumInstance) {
+            enumInstance.values.set(step, new CValue(elementValue,match ? 1 : 0));
+        } else if (element instanceof CStructOrUnionInstance structOrUnionInstance) {
             // Check which member of the struct or union is being updated
             List<String> elementMembers = List.of(elementName.split("\\."));
             CElement elementRef = structOrUnionInstance;
             int elementNameIndex = 0;
-            for (int i = 0; i < elementMembers.size(); i++) {
+            for (int i = 1; i < elementMembers.size(); i++) {
                 if (elementRef instanceof CStructOrUnionInstance structOrUnionInstance1) {
                     for (CElement member : structOrUnionInstance1.getStructType().getMembers()) {
                         if (member.getName().equals(elementMembers.get(i))) {
@@ -449,65 +461,30 @@ public class TDriverUtils {
                         }
                     }
                 } else if (elementRef instanceof CArray array) {
-                    for(CElement element:array.getArrayMembers()){
-                        if(element.getName().equals(elementMembers.get(i))){
-                            elementRef = element;
+                    for(CElement element1:array.getArrayMembers()){
+                        if(element1.getName().equals(elementMembers.get(i))){
+                            elementRef = element1;
                             break;
                         }
                     }
                 } else if(elementRef instanceof CVariable var1){
-                    var1.values.set(step,elementValue);
+                    var1.values.set(step,new CValue(elementValue,match ? 1 : 0));
                     break;
                 } else if(elementRef instanceof CEnumInstance enumInstance1){
-                    enumInstance1.values.set(step,elementValue);
+                    enumInstance1.values.set(step,new CValue(elementValue,match ? 1 : 0));
                     break;
                 }
                 elementNameIndex++;
             }
-            if(elementNameIndex != elementMembers.size()){
+            if(elementRef instanceof CVariable var1) {
+                var1.values.set(step, new CValue(elementValue, match ? 1 : 0));
+            }else if(elementRef instanceof CEnumInstance enumInstance1){
+                enumInstance1.values.set(step,new CValue(elementValue,match ? 1 : 0));
+            }else{
                 throw new Exception("Failed to parse test results");
             }
-        }
-    }
-
-    private static void _handleGlobalOutput(TResults result, int step, String elementName, String elementValue) throws Exception {
-        for (CElement global : result.getGlobalOutputs()){
-            if (global instanceof CVariable var) {
-                var.values.set(step, elementValue);
-            } else if (global instanceof CEnumInstance enumInstance) {
-                enumInstance.values.set(step, elementValue);
-            } else if (global instanceof CStructOrUnionInstance structOrUnionInstance) {
-                // Check which member of the struct or union is being updated
-                List<String> elementMembers = List.of(elementName.split("\\."));
-                CElement elementRef = structOrUnionInstance;
-                int elementNameIndex = 0;
-                for (int i = 0; i < elementMembers.size(); i++) {
-                    if (elementRef instanceof CStructOrUnionInstance structOrUnionInstance1) {
-                        for (CElement member : structOrUnionInstance1.getStructType().getMembers()) {
-                            if (member.getName().equals(elementMembers.get(i))) {
-                                elementRef = member;
-                                break;
-                            }
-                        }
-                    } else if (elementRef instanceof CArray array) {
-                        for(CElement element:array.getArrayMembers()){
-                            if(element.getName().equals(elementMembers.get(i))){
-                                elementRef = element;
-                                break;
-                            }
-                        }
-                    } else if(elementRef instanceof CVariable var1){
-                        var1.values.set(step,elementValue);
-                        break;
-                    } else if(elementRef instanceof CEnumInstance enumInstance1){
-                        enumInstance1.values.set(step,elementValue);
-                        break;
-                    }
-                    elementNameIndex++;
-                }
-                if(elementNameIndex != elementMembers.size()){
-                    throw new Exception("Failed to parse test results");
-                }
+            if(elementNameIndex != elementMembers.size() - 1){
+                throw new Exception("Failed to parse test results");
             }
         }
     }

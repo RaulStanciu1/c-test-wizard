@@ -9,14 +9,27 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTreeTableCell;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.paint.Color;
+import javafx.util.Callback;
+import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TableFactory {
+    public static void addTestStep(TreeTableView<CElement> tableView){
+        int testSteps = tableView.getColumns().size()-1;
+        TreeTableColumn<CElement, String> valueColumn = getcElementStringTreeTableColumn(testSteps);
+        tableView.getColumns().add(valueColumn);
+    }
+
     public static TreeTableView<CElement> createParameterTable(TCase testCase){
         return createTable(testCase,testCase.getParameters(),"Parameters");
     }
@@ -83,6 +96,7 @@ public class TableFactory {
         passingColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(tInterface.getGlobals().get(param.getValue())));
         passingColumn.setOnEditCommit(event -> {
             tInterface.getGlobals().put(event.getRowValue(),event.getNewValue());
+            tInterface.getParent().getTestCases().forEach(TCase::update);
         });
         TableView<CElement> globalsTable = new TableView<>();
         globalsTable.getColumns().add(globalColumn);
@@ -101,11 +115,12 @@ public class TableFactory {
         passingColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(tInterface.getUserGlobals().get(param.getValue())));
         passingColumn.setOnEditCommit(event -> {
             tInterface.getUserGlobals().put(event.getRowValue(),event.getNewValue());
+            tInterface.getParent().getTestCases().forEach(TCase::update);
         });
         TableView<CElement> globalsTable = new TableView<>();
         globalsTable.getColumns().add(globalColumn);
         globalsTable.getColumns().add(passingColumn);
-        globalsTable.getItems().addAll(new ArrayList<>(tInterface.getGlobals().keySet()));
+        globalsTable.getItems().addAll(new ArrayList<>(tInterface.getUserGlobals().keySet()));
         globalColumn.prefWidthProperty().bind(globalsTable.widthProperty().divide(2));
         globalsTable.setEditable(true);
         return globalsTable;
@@ -177,16 +192,109 @@ public class TableFactory {
         TreeTableColumn<CElement, String> valueColumn = new TreeTableColumn<>(String.valueOf(i +1));
         int finalI = i;
         valueColumn.setCellValueFactory(param -> _valueColumnFactory(param, finalI));
-        valueColumn.setCellFactory(TextFieldTreeTableCell.forTreeTableColumn());
+        valueColumn.setCellFactory(column -> new TreeTableCell<>(){
+            private final TextField textField;
+            {
+                textField = new TextField();
+                textField.setOnAction(event -> commitEdit(textField.getText()));
+                textField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+                    if(!newValue){
+                        commitEdit(textField.getText());
+                    }
+                });
+            }
+            /*
+            private void updateStructMembers(CStructOrUnionInstance instance){
+                for(CElement structMember:instance.getStructType().getMembers()){
+                    setBackgroundTableCell(structMember);
+                }
+            }
+            private void updateArrayMembers(CArray array){
+                for(CElement element:array.getArrayMembers()){
+                    setBackgroundTableCell(element);
+                }
+            }
+            */
+            private void setBackgroundTableCell(CElement element){
+                if(element instanceof CVariable variable) {
+                    if(variable.values.get(finalI).valueStatus == 0) {
+                        setStyle("-fx-background-color: #ff0000;");
+                    }else if(variable.values.get(finalI).valueStatus == 1) {
+                        setStyle("-fx-background-color: #00ff00;");
+                    }else{
+                        setStyle("");
+                    }
+                }else if(element instanceof CEnumInstance enumInstance) {
+                    if (enumInstance.values.get(finalI).valueStatus == 0) {
+                        setStyle("-fx-background-color: #ff0000;");
+                    } else if (enumInstance.values.get(finalI).valueStatus == 1) {
+                        setStyle("-fx-background-color: #00ff00;");
+                    } else {
+                        setStyle("");
+                    }
+                }else if(element instanceof CStructOrUnionInstance structOrUnionInstance){
+                    if(structOrUnionInstance.getPointers()!= 0) {
+                        if (structOrUnionInstance.values.get(finalI).valueStatus == 0) {
+                            setStyle("-fx-background-color: #ff0000;");
+                        } else if (structOrUnionInstance.values.get(finalI).valueStatus == 1) {
+                            setStyle("-fx-background-color: #00ff00;");
+                        } else {
+                            setStyle("");
+                        }
+                    }
+                }
+            }
+            @Override
+            protected void updateItem(String item, boolean empty){
+                super.updateItem(item,empty);
+                if(empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                }else{
+                    setText(item);
+                    textField.setText(item);
+                    CElement element = getTableRow().getItem();
+                    setBackgroundTableCell(element);
+                }
+            }
+            @Override
+            public void startEdit() {
+                super.startEdit();
+                if (!isEmpty()) {
+                    textField.setText(getItem());
+                    setText(null);
+                    setGraphic(textField);
+                    textField.selectAll();
+                    textField.requestFocus();
+                }
+            }
+
+            @Override
+            public void commitEdit(String newValue) {
+                super.commitEdit(newValue);
+                setText(getItem());
+                setGraphic(null);
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                setText(getItem());
+                setGraphic(null);
+            }
+        });
+
         //Make the column edit the values of the CElement when changed in the table
         valueColumn.setOnEditCommit(event -> {
             CElement element = event.getRowValue().getValue();
             if(element instanceof CVariable variable){
-                variable.values.set(finalI, event.getNewValue());
+                variable.values.set(finalI, new CValue(event.getNewValue(),-1));
             }else if(element instanceof CStructOrUnionInstance structOrUnionInstance){
                 if(structOrUnionInstance.getPointers()!= 0){
-                    structOrUnionInstance.values.set(finalI, event.getNewValue());
+                    structOrUnionInstance.values.set(finalI, new CValue(event.getNewValue(),-1));
                 }
+            }else if(element instanceof CEnumInstance enumInstance){
+                enumInstance.values.set(finalI, new CValue(event.getNewValue(),-1));
             }
         });
         return valueColumn;
@@ -195,11 +303,13 @@ public class TableFactory {
     private static SimpleStringProperty _valueColumnFactory(TreeTableColumn.CellDataFeatures<CElement, String> param, int index){
         CElement element = param.getValue().getValue();
         if(element instanceof CVariable variable){
-            return new SimpleStringProperty(variable.values.get(index));
+            return new SimpleStringProperty(variable.values.get(index).value);
         }else if(element instanceof CStructOrUnionInstance structOrUnionInstance) {
             if(structOrUnionInstance.getPointers()!= 0){
-                return new SimpleStringProperty(structOrUnionInstance.values.get(index));
+                return new SimpleStringProperty(structOrUnionInstance.values.get(index).value);
             }
+        }else if(element instanceof CEnumInstance enumInstance){
+            return new SimpleStringProperty(enumInstance.values.get(index).value);
         }
         return new SimpleStringProperty("");
     }

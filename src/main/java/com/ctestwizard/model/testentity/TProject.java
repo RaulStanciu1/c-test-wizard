@@ -6,24 +6,50 @@ import com.ctestwizard.model.entity.CFunction;
 import com.ctestwizard.model.testdriver.TDriver;
 import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TProject implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+    private final String name;
     private TDriver testDriver;
     private List<TObject> testObjects;
     private List<CElement> structOrUnionTypes;
     private List<CElement> enumTypes;
 
-    public TProject() {
+    public TProject(String name) {
+        this.name = name;
         this.testObjects = new ArrayList<>();
         this.structOrUnionTypes = new ArrayList<>();
         this.enumTypes = new ArrayList<>();
     }
 
-    public static TProject newTProject(String sourceFilePath, String projectPath) throws Exception {
+    public static TProject loadProject(String projectPath) throws Exception{
+        //Read the project object from a file
+        try(FileInputStream fileIn = new FileInputStream(projectPath);
+            ObjectInputStream in = new ObjectInputStream(fileIn)){
+            return (TProject) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            System.out.println(e);
+            throw new Exception("Could not load project");
+        }
+    }
+
+    public static void archiveProject(TProject project) throws Exception{
+        //Write the project object to a file
+        String projectPath = project.getTestDriver().getProjectPath()+File.separator+project.getName()+".ctw";
+        try(FileOutputStream fileOut = new FileOutputStream(projectPath);
+            ObjectOutputStream out = new ObjectOutputStream(fileOut)){
+            out.writeObject(project);
+        } catch (IOException e) {
+            throw new Exception("Could not archive project");
+        }
+    }
+
+    public static TProject newTProject(String projectName,String sourceFilePath, String projectPath) throws Exception {
         File sourceFile = new File(sourceFilePath);
         if (!sourceFile.exists()) {
             throw new Exception("Source File Cannot be found");
@@ -56,7 +82,7 @@ public class TProject implements Serializable {
         CParserDetector parser = new CParserDetector(sourceFilePath);
         parser.walkParseTree();
         List<TObject> testObjects = new ArrayList<>();
-        TProject newTestProject = new TProject();
+        TProject newTestProject = new TProject(projectName);
         for (CFunction testFunction : parser.getLocalFunctionDefinitions()) {
             TObject newTestObject = TObject.newTObject(newTestProject, parser, testFunction);
             testObjects.add(newTestObject);
@@ -101,5 +127,9 @@ public class TProject implements Serializable {
 
     public void setTestDriver(TDriver testDriver) {
         this.testDriver = testDriver;
+    }
+
+    public String getName(){
+        return name;
     }
 }

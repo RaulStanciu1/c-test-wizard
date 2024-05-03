@@ -3,11 +3,12 @@ package com.ctestwizard.model.testentity;
 import com.ctestwizard.model.entity.CElement;
 import com.ctestwizard.model.entity.CFunction;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TInterface {
+public class TInterface implements Serializable {
     private final TObject parent;
     private List<CFunction> externalFunc;
     private List<CFunction> localFunc;

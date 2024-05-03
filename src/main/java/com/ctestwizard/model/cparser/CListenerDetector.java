@@ -6,7 +6,9 @@ import com.ctestwizard.model.entity.*;
 import org.antlr.v4.runtime.RuleContext;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CListenerDetector extends CBaseListener implements Cloneable {
@@ -355,12 +357,21 @@ public class CListenerDetector extends CBaseListener implements Cloneable {
              */
             else {
                 List<String> enumMembers = new ArrayList<>();
+                Map<String, Integer> symbolMap = new HashMap<>();
                 List<CParser.EnumeratorContext> enumContextList = typeContext
                         .enumSpecifier().enumeratorList().enumerator();
+                int index = 0;
                 for (CParser.EnumeratorContext enumContext : enumContextList) {
                     enumMembers.add(enumContext.enumerationConstant().getText());
+                    if(enumContext.constantExpression() != null){
+                        symbolMap.put(enumContext.enumerationConstant().getText(), Integer.parseInt(enumContext.constantExpression().getText()));
+                        index = Integer.parseInt(enumContext.constantExpression().getText()) + 1;
+                    }else{
+                        symbolMap.put(enumContext.enumerationConstant().getText(), index);
+                        index++;
+                    }
                 }
-                return new CEnum(nameContext.getText(), enumMembers);
+                return new CEnum(nameContext.getText(), enumMembers, symbolMap);
             }
         }
     }
@@ -431,10 +442,19 @@ public class CListenerDetector extends CBaseListener implements Cloneable {
          */
         if (ctx.enumeratorList() != null) {
             enumBody = new ArrayList<>();
+            HashMap<String, Integer> symbolMap = new HashMap<>();
+            int index = 0;
             for (CParser.EnumeratorContext context : ctx.enumeratorList().enumerator()) {
                 enumBody.add(context.enumerationConstant().getText());
+                if(context.constantExpression() != null){
+                    symbolMap.put(context.enumerationConstant().getText(), Integer.parseInt(context.constantExpression().getText()));
+                    index = Integer.parseInt(context.constantExpression().getText()) + 1;
+                }else{
+                    symbolMap.put(context.enumerationConstant().getText(), index);
+                    index++;
+                }
             }
-            this.enumList.add(new CEnum(enumName, enumBody));
+            this.enumList.add(new CEnum(enumName, enumBody,symbolMap));
         }
     }
 

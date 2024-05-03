@@ -2,13 +2,16 @@ package com.ctestwizard.model.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CEnum implements CElement{
     private String name;
     private List<String> members;
-    public CEnum(String name, List<String> members){
+    private final Map<String, Integer> symbolMap;
+    public CEnum(String name, List<String> members, Map<String, Integer> symbolMap){
         this.name = name;
         this.members = members;
+        this.symbolMap = symbolMap;
     }
 
     public String getName() {
@@ -27,10 +30,10 @@ public class CEnum implements CElement{
     public void setName(String name){
         this.name = name;
     }
-    public void setMembers(List<String>members){
-        this.members = members;
-    }
 
+    public Map<String, Integer> getSymbolMap() {
+        return symbolMap;
+    }
     @Override
     public CEnum clone() {
         try {

@@ -2,10 +2,13 @@ package com.ctestwizard.model.testentity;
 
 import com.ctestwizard.model.cparser.CParserDetector;
 import com.ctestwizard.model.entity.*;
+import com.ctestwizard.model.testdriver.TResults;
+import javafx.util.Pair;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class TObject {
+public class TObject implements Serializable {
     private CFunction testFunction;
     private TInterface testInterface;
     private List<TCase> testCases;
@@ -31,8 +34,8 @@ public class TObject {
         newTestObjectInterface = new TInterface(newTestObject, newParser.getExternalFunctionDefinitions(),newParser.getLocalFunctionDefinitions(),newParser.getGlobals(),newTestFunction.getParameters(),newTestFunction.getRetType());
         newTestObject.setTestInterface(newTestObjectInterface);
         List<TCase> newTestCases = new ArrayList<>();
-        newTestCases.add(new TCase(newTestObject));
         newTestObject.setTestCases(newTestCases);
+        newTestCases.add(TCase.newTestCase(newTestObject));
         return newTestObject;
     }
 
@@ -60,13 +63,21 @@ public class TObject {
         return parent;
     }
 
+    private List<CValue> nEmptyList(int n){
+        List<CValue> emptyList = new ArrayList<>();
+        for(int i = 0; i < n; i++){
+            emptyList.add(new CValue("",-1));
+        }
+        return emptyList;
+    }
+
     public void __updateStructOrUnionMember(CElement member){
         if(member instanceof CVariable){
-            ((CVariable)member).values = Collections.nCopies(this.getTestCases().get(0).getTSteps(),"");
+            ((CVariable)member).values = nEmptyList(this.getTestCases().get(0).getTSteps());
         }else if(member instanceof CEnumInstance){
-            ((CEnumInstance)member).values = Collections.nCopies(this.getTestCases().get(0).getTSteps(),"");
+            ((CEnumInstance)member).values = nEmptyList(this.getTestCases().get(0).getTSteps());
         }else if(member instanceof CStructOrUnionInstance){
-            ((CStructOrUnionInstance)member).values = Collections.nCopies(this.getTestCases().get(0).getTSteps(),"");
+            ((CStructOrUnionInstance)member).values = nEmptyList(this.getTestCases().get(0).getTSteps());
             for(CElement subMember : ((CStructOrUnionInstance)member).getStructType().getMembers()){
                 __updateStructOrUnionMember(subMember);
             }
@@ -76,14 +87,14 @@ public class TObject {
     public void _updateTestCaseOutput(TCase testCase){
         if (testCase.getOutput() instanceof CVariable) {
             testCase.setOutput(this.testFunction.getRetType().clone());
-            ((CVariable)testCase.getOutput()).values = Collections.nCopies(testCase.getTSteps(),"");
+            ((CVariable)testCase.getOutput()).values = nEmptyList(this.getTestCases().get(0).getTSteps());
         }else if(testCase.getOutput() instanceof CEnumInstance){
             testCase.setOutput(this.testFunction.getRetType().clone());
-            ((CEnumInstance)testCase.getOutput()).values = Collections.nCopies(testCase.getTSteps(),"");
+            ((CEnumInstance)testCase.getOutput()).values = nEmptyList(this.getTestCases().get(0).getTSteps());
         }
         else if(testCase.getOutput() instanceof CStructOrUnionInstance){
             testCase.setOutput(this.testFunction.getRetType().clone());
-            ((CStructOrUnionInstance)testCase.getOutput()).values = Collections.nCopies(testCase.getTSteps(),"");
+            ((CStructOrUnionInstance)testCase.getOutput()).values = nEmptyList(this.getTestCases().get(0).getTSteps());
             for(CElement member :((CStructOrUnionInstance)testCase.getOutput()).getStructType().getMembers()){
                 __updateStructOrUnionMember(member);
             }
@@ -96,15 +107,15 @@ public class TObject {
         for(CElement parameter:parameters){
             if(parameter instanceof CVariable){
                 CVariable newParameter = ((CVariable)parameter).clone();
-                newParameter.values = Collections.nCopies(testCase.getTSteps(),"");
+                newParameter.values = nEmptyList(this.getTestCases().get(0).getTSteps());
                 newParameters.add(newParameter);
             }else if(parameter instanceof CEnumInstance){
                 CEnumInstance newParameter = ((CEnumInstance)parameter).clone();
-                newParameter.values = Collections.nCopies(testCase.getTSteps(),"");
+                newParameter.values = nEmptyList(this.getTestCases().get(0).getTSteps());
                 newParameters.add(newParameter);
             }else if(parameter instanceof CStructOrUnionInstance){
                 CStructOrUnionInstance newParameter = ((CStructOrUnionInstance)parameter).clone();
-                newParameter.values = Collections.nCopies(testCase.getTSteps(),"");
+                newParameter.values = nEmptyList(this.getTestCases().get(0).getTSteps());
                 for(CElement member : newParameter.getStructType().getMembers()){
                     __updateStructOrUnionMember(member);
                 }
@@ -207,6 +218,14 @@ public class TObject {
         //Update the values of the globals in the test cases
         for(TCase testCase:this.getTestCases()){
             testCase.update();
+        }
+    }
+
+    public void compareTestResults(List<TResults> tResults){
+        for(int i = 0; i < tResults.size(); i++){
+            TResults result = tResults.get(i);
+            TCase testCase = this.getTestCases().get(i);
+            testCase.compareResults(result);
         }
     }
 }

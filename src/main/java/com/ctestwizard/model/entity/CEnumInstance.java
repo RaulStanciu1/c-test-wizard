@@ -1,5 +1,7 @@
 package com.ctestwizard.model.entity;
 
+import javafx.util.Pair;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -8,7 +10,7 @@ public class CEnumInstance implements CElement{
     private CEnum enumType;
     private String name;
     private int pointers;
-    public List<String> values = new ArrayList<>();
+    public List<CValue> values = new ArrayList<>();
     public CEnumInstance(CEnum type, String instanceStr){
         this.enumType = type;
         this.pointers = (int) instanceStr.chars().filter(c -> c == '*').count();
@@ -18,6 +20,11 @@ public class CEnumInstance implements CElement{
                 .mapToObj(c -> String.valueOf((char) c))
                 .collect(Collectors.joining());
     }
+    public CEnumInstance(CEnum type,String name, int pointers){
+        this.enumType = type.clone();
+        this.name = name;
+        this.pointers = pointers;
+    }
     @Override
     public CEnumInstance clone(){
         try{
@@ -26,7 +33,9 @@ public class CEnumInstance implements CElement{
             clone.enumType = this.enumType.clone();
             clone.pointers = this.pointers;
             clone.values = new ArrayList<>();
-            clone.values.addAll(this.values);
+            for(int i = 0; i < this.values.size(); i++){
+                clone.values.add(this.values.get(i).clone());
+            }
             return clone;
         }
         catch(CloneNotSupportedException e) {

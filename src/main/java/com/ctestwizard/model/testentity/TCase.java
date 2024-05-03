@@ -2,13 +2,16 @@ package com.ctestwizard.model.testentity;
 
 
 import com.ctestwizard.model.entity.*;
+import com.ctestwizard.model.testdriver.TResults;
+import javafx.util.Pair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class TCase {
+public class TCase implements Serializable {
     private final TObject parent;
+    private int id;
     private String title;
     private String description;
     private List<CElement> parameters;
@@ -16,7 +19,8 @@ public class TCase {
     private List<CElement> outputGlobals;
     private CElement output;
     private int tSteps;
-    public TCase(TObject parent){
+    public TCase(TObject parent, int id){
+        this.id = id;
         this.tSteps = 0;
         this.parent = parent;
         this.title = "";
@@ -51,20 +55,25 @@ public class TCase {
         this.outputGlobals=outputGlobals;
     }
 
+    public static TCase newTestCase(TObject parent){
+        int id = parent.getTestCases().size() + 1;
+        return new TCase(parent, id);
+    }
+
     public void newTStep(){
         this.tSteps++;
         // Add a new test step to the test case(creating a new element in every values list of each CElement)
         for(CElement parameter : parameters){
             if(parameter instanceof CVariable variable){
-                variable.values.add("");
+                variable.values.add(new CValue("",-1));
             }else if(parameter instanceof CEnumInstance enumInstance){
-                enumInstance.values.add("");
+                enumInstance.values.add(new CValue("",-1));
             }else if(parameter instanceof CStructOrUnionInstance structOrUnionInstance){
                 // It's a pointer to a struct
                 if(structOrUnionInstance.getPointers() != 0){
-                    structOrUnionInstance.values.add("");
+                    structOrUnionInstance.values.add(new CValue("",-1));
                 }else{
-                    structOrUnionInstance.values.add("");
+                    structOrUnionInstance.values.add(new CValue("",-1));
                     //Go recursively through the struct members and add a new value for each member
                     _newTStepStructOrUnion(structOrUnionInstance);
                 }
@@ -75,15 +84,15 @@ public class TCase {
         }
         for(CElement inputGlobal : inputGlobals){
             if(inputGlobal instanceof CVariable variable){
-                variable.values.add("");
+                variable.values.add(new CValue("",-1));
             }else if(inputGlobal instanceof CEnumInstance enumInstance){
-                enumInstance.values.add("");
+                enumInstance.values.add(new CValue("",-1));
             }else if(inputGlobal instanceof CStructOrUnionInstance structOrUnionInstance){
                 // It's a pointer to a struct
                 if(structOrUnionInstance.getPointers() != 0){
-                    structOrUnionInstance.values.add("");
+                    structOrUnionInstance.values.add(new CValue("",-1));
                 }else{
-                    structOrUnionInstance.values.add("");
+                    structOrUnionInstance.values.add(new CValue("",-1));
                     //Go recursively through the struct members and add a new value for each member
                     _newTStepStructOrUnion(structOrUnionInstance);
                 }
@@ -94,15 +103,15 @@ public class TCase {
         }
         for(CElement outputGlobal : outputGlobals){
             if(outputGlobal instanceof CVariable variable){
-                variable.values.add("");
+                variable.values.add(new CValue("",-1));
             }else if(outputGlobal instanceof CEnumInstance enumInstance){
-                enumInstance.values.add("");
+                enumInstance.values.add(new CValue("",-1));
             }else if(outputGlobal instanceof CStructOrUnionInstance structOrUnionInstance){
                 // It's a pointer to a struct
                 if(structOrUnionInstance.getPointers() != 0){
-                    structOrUnionInstance.values.add("");
+                    structOrUnionInstance.values.add(new CValue("",-1));
                 }else{
-                    structOrUnionInstance.values.add("");
+                    structOrUnionInstance.values.add(new CValue("",-1));
                     //Go recursively through the struct members and add a new value for each member
                     _newTStepStructOrUnion(structOrUnionInstance);
                 }
@@ -112,15 +121,15 @@ public class TCase {
             }
         }
         if(output instanceof CVariable variable) {
-            variable.values.add("");
+            variable.values.add(new CValue("",-1));
         }else if(output instanceof CEnumInstance enumInstance) {
-            enumInstance.values.add("");
+            enumInstance.values.add(new CValue("",-1));
         }else if(output instanceof CStructOrUnionInstance structOrUnionInstance) {
             // It's a pointer to a struct
             if (structOrUnionInstance.getPointers() != 0) {
-                structOrUnionInstance.values.add("");
+                structOrUnionInstance.values.add(new CValue("",-1));
             } else {
-                structOrUnionInstance.values.add("");
+                structOrUnionInstance.values.add(new CValue("",-1));
                 //Go recursively through the struct members and add a new value for each member
                 _newTStepStructOrUnion(structOrUnionInstance);
             }
@@ -137,42 +146,60 @@ public class TCase {
         for(CElement global: tInterface.getGlobals().keySet()){
             TPassing globalPassing = tInterface.getGlobals().get(global);
             if(globalPassing == TPassing.IN || globalPassing == TPassing.INOUT){
-                if(!inputGlobals.contains(global)){
+                if(containsGlobal(inputGlobals, global)){
                     CElement updatedGlobal = updateGlobal(global.clone());
                     inputGlobals.add(updatedGlobal);
                 }
             }
             if(globalPassing == TPassing.OUT || globalPassing == TPassing.INOUT){
-                if(!outputGlobals.contains(global)){
+                if(containsGlobal(outputGlobals, global)){
                     CElement updatedGlobal = updateGlobal(global.clone());
                     outputGlobals.add(updatedGlobal);
                 }
             }
             if(globalPassing == TPassing.NONE){
-                inputGlobals.remove(global);
-                outputGlobals.remove(global);
+                removeGlobal(inputGlobals,global);
+                removeGlobal(outputGlobals,global);
             }
         }
         //Update the user globals
         for(CElement userGlobal: tInterface.getUserGlobals().keySet()){
             TPassing globalPassing = tInterface.getUserGlobals().get(userGlobal);
             if(globalPassing == TPassing.IN || globalPassing == TPassing.INOUT){
-                if(!inputGlobals.contains(userGlobal)){
+                if(containsGlobal(inputGlobals, userGlobal)){
                     CElement updatedGlobal = updateGlobal(userGlobal.clone());
                     inputGlobals.add(updatedGlobal);
                 }
             }
             if(globalPassing == TPassing.OUT || globalPassing == TPassing.INOUT){
-                if(!outputGlobals.contains(userGlobal)){
+                if(containsGlobal(outputGlobals, userGlobal)){
                     CElement updatedGlobal = updateGlobal(userGlobal.clone());
                     outputGlobals.add(updatedGlobal);
                 }
             }
             if(globalPassing == TPassing.NONE){
-                inputGlobals.remove(userGlobal);
-                outputGlobals.remove(userGlobal);
+                removeGlobal(inputGlobals,userGlobal);
+                removeGlobal(outputGlobals,userGlobal);
             }
         }
+    }
+
+    private void removeGlobal(List<CElement> globals, CElement global){
+        for(CElement element : globals){
+            if(element.getName().equals(global.getName())){
+                globals.remove(element);
+                break;
+            }
+        }
+    }
+
+    private boolean containsGlobal(List<CElement> globals, CElement global){
+        for(CElement element : globals){
+            if(element.getName().equals(global.getName())){
+                return false;
+            }
+        }
+        return true;
     }
 
     private CElement updateGlobal(CElement global){
@@ -220,14 +247,14 @@ public class TCase {
             if(member instanceof CArray array){
                 _newTStepArray(array);
             } else if(member instanceof CVariable variable){
-                variable.values.add("");
+                variable.values.add(new CValue("",-1));
             }else if(member instanceof CEnumInstance enumInstance){
-                enumInstance.values.add("");
+                enumInstance.values.add(new CValue("",-1));
             }else if(member instanceof CStructOrUnionInstance structOrUnionInstance){
                 if (structOrUnionInstance.getPointers() != 0) {
-                    structOrUnionInstance.values.add("");
+                    structOrUnionInstance.values.add(new CValue("",-1));
                 } else {
-                    structOrUnionInstance.values.add("");
+                    structOrUnionInstance.values.add(new CValue("",-1));
                     //Go recursively through the struct members and add a new value for each member
                     _newTStepStructOrUnion(structOrUnionInstance);
                 }
@@ -240,14 +267,14 @@ public class TCase {
             if(member instanceof CArray arrayMember){
                 _newTStepArray(arrayMember);
             } else if(member instanceof CVariable variable){
-                variable.values.add("");
+                variable.values.add(new CValue("",-1));
             }else if(member instanceof CEnumInstance enumInstance){
-                enumInstance.values.add("");
+                enumInstance.values.add(new CValue("",-1));
             }else if(member instanceof CStructOrUnionInstance structOrUnionInstance){
                 if (structOrUnionInstance.getPointers() != 0) {
-                    structOrUnionInstance.values.add("");
+                    structOrUnionInstance.values.add(new CValue("",-1));
                 } else {
-                    structOrUnionInstance.values.add("");
+                    structOrUnionInstance.values.add(new CValue("",-1));
                     //Go recursively through the struct members and add a new value for each member
                     _newTStepStructOrUnion(structOrUnionInstance);
                 }
@@ -255,12 +282,73 @@ public class TCase {
         }
     }
 
-    private List<String> nEmptyList(int n){
-        List<String> emptyList = new ArrayList<>();
+    private List<CValue> nEmptyList(int n){
+        List<CValue> emptyList = new ArrayList<>();
         for(int i = 0; i < n; i++){
-            emptyList.add("");
+            emptyList.add(new CValue("",-1));
         }
         return emptyList;
+    }
+
+    public void compareResults(TResults result){
+        CElement output = this.output;
+        CElement resultOutput = result.getOutput();
+        List<CElement> globalOutputs = this.outputGlobals;
+        List<CElement> resultGlobalOutputs = result.getGlobalOutputs();
+        for(int i = 0; i < this.tSteps; i++){
+            if(output instanceof CVariable variable && resultOutput instanceof CVariable resultVariable){
+                variable.values.get(i).setValueStatus(resultVariable.values.get(i).valueStatus);
+            } else if(output instanceof CEnumInstance enumInstance && resultOutput instanceof CEnumInstance resultEnumInstance){
+                enumInstance.values.get(i).setValueStatus(resultEnumInstance.values.get(i).valueStatus);
+            } else if(output instanceof CStructOrUnionInstance structOrUnionInstance && resultOutput instanceof CStructOrUnionInstance resultStructOrUnionInstance){
+                if(structOrUnionInstance.getPointers() != 0) {
+                    structOrUnionInstance.values.get(i).setValueStatus(resultStructOrUnionInstance.values.get(i).valueStatus);
+                }else{
+                    _compareStructOrUnionMembers(structOrUnionInstance, resultStructOrUnionInstance, i);
+                }
+            } else if(output instanceof CArray array && resultOutput instanceof CArray resultArray){
+                _compareArrayMembers(array, resultArray, i);
+            }
+
+        }
+    }
+    private void _compareStructOrUnionMembers(CStructOrUnionInstance instance, CStructOrUnionInstance resultInstance, int tStep){
+        for(int i = 0; i < instance.getStructType().getMembers().size(); i++){
+            CElement member = instance.getStructType().getMembers().get(i);
+            CElement resultMember = resultInstance.getStructType().getMembers().get(i);
+            if(member instanceof CVariable variable && resultMember instanceof CVariable resultVariable){
+                variable.values.get(tStep).setValueStatus(resultVariable.values.get(tStep).valueStatus);
+            } else if(member instanceof CEnumInstance enumInstance && resultMember instanceof CEnumInstance resultEnumInstance){
+                enumInstance.values.get(tStep).setValueStatus(resultEnumInstance.values.get(tStep).valueStatus);
+            } else if(member instanceof CStructOrUnionInstance structOrUnionInstance && resultMember instanceof CStructOrUnionInstance resultStructOrUnionInstance){
+                if(structOrUnionInstance.getPointers() != 0) {
+                    structOrUnionInstance.values.get(tStep).setValueStatus(resultStructOrUnionInstance.values.get(tStep).valueStatus);
+                }else{
+                    _compareStructOrUnionMembers(structOrUnionInstance, resultStructOrUnionInstance, tStep);
+                }
+            } else if(member instanceof CArray array && resultMember instanceof CArray resultArray){
+                _compareArrayMembers(array, resultArray, tStep);
+            }
+        }
+    }
+    private void _compareArrayMembers(CArray array, CArray resultArray, int tStep){
+        for(int i = 0; i < array.getArrayMembers().size(); i++){
+            CElement member = array.getArrayMembers().get(i);
+            CElement resultMember = resultArray.getArrayMembers().get(i);
+            if(member instanceof CVariable variable && resultMember instanceof CVariable resultVariable){
+                variable.values.get(tStep).setValueStatus(resultVariable.values.get(tStep).valueStatus);
+            } else if(member instanceof CEnumInstance enumInstance && resultMember instanceof CEnumInstance resultEnumInstance){
+                enumInstance.values.get(tStep).setValueStatus(resultEnumInstance.values.get(tStep).valueStatus);
+            } else if(member instanceof CStructOrUnionInstance structOrUnionInstance && resultMember instanceof CStructOrUnionInstance resultStructOrUnionInstance){
+                if(structOrUnionInstance.getPointers() != 0) {
+                    structOrUnionInstance.values.get(tStep).setValueStatus(resultStructOrUnionInstance.values.get(tStep).valueStatus);
+                }else{
+                    _compareStructOrUnionMembers(structOrUnionInstance, resultStructOrUnionInstance, tStep);
+                }
+            } else if(member instanceof CArray arrayMember && resultMember instanceof CArray resultArrayMember){
+                _compareArrayMembers(arrayMember, resultArrayMember, tStep);
+            }
+        }
     }
 
 
@@ -318,5 +406,9 @@ public class TCase {
 
     public int getTSteps() {
         return tSteps;
+    }
+
+    public int getId(){
+        return id;
     }
 }

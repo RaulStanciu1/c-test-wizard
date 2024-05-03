@@ -1,6 +1,8 @@
 package com.ctestwizard.model.entity;
 
 
+import javafx.util.Pair;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,7 +12,7 @@ public class CVariable implements CElement {
     private String name;
     private int pointers;
 
-    public List<String> values = new ArrayList<>();
+    public List<CValue> values;
 
     public CVariable(String type, String name){
         this.type = type;
@@ -19,6 +21,14 @@ public class CVariable implements CElement {
                 .filter(c -> c != '*')
                 .mapToObj(c -> String.valueOf((char) c))
                 .collect(Collectors.joining());
+        this.values = new ArrayList<>();
+    }
+
+    public CVariable(String type, String name, int pointers){
+        this.type = type;
+        this.name = name;
+        this.pointers = pointers;
+        this.values = new ArrayList<>();
     }
 
     @Override
@@ -28,7 +38,9 @@ public class CVariable implements CElement {
             clone.type = this.type;
             clone.name = this.name;
             clone.values = new ArrayList<>();
-            clone.values.addAll(this.values);
+            for(int i = 0; i < this.values.size(); i++){
+                clone.values.add(this.values.get(i).clone());
+            }
             return clone;
         }catch (CloneNotSupportedException e) {
             throw new AssertionError();

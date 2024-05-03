@@ -16,4 +16,16 @@ module com.ctestwizard {
     exports com.ctestwizard;
     exports com.ctestwizard.controller;
     opens com.ctestwizard.controller to javafx.fxml;
+
+    opens com.ctestwizard.model.testentity to javafx.fxml;
+    exports com.ctestwizard.model.testentity;
+
+    opens com.ctestwizard.model.entity to javafx.fxml;
+    exports com.ctestwizard.model.entity;
+
+    opens com.ctestwizard.model.testdriver to javafx.fxml;
+    exports com.ctestwizard.model.testdriver;
+
+    opens com.ctestwizard.model.cparser to javafx.fxml;
+    exports com.ctestwizard.model.cparser;
 }
