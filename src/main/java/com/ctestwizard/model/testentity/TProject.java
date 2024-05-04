@@ -13,12 +13,11 @@ import java.util.List;
 public class TProject implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private final String name;
+    private String name;
     private TDriver testDriver;
     private List<TObject> testObjects;
     private List<CElement> structOrUnionTypes;
     private List<CElement> enumTypes;
-
     public TProject(String name) {
         this.name = name;
         this.testObjects = new ArrayList<>();
@@ -32,8 +31,6 @@ public class TProject implements Serializable {
             ObjectInputStream in = new ObjectInputStream(fileIn)){
             return (TProject) in.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            System.out.println(e);
             throw new Exception("Could not load project");
         }
     }
@@ -131,5 +128,9 @@ public class TProject implements Serializable {
 
     public String getName(){
         return name;
+    }
+
+    public void setName(String name){
+        this.name = name;
     }
 }

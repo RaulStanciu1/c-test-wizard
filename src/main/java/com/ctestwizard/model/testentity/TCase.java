@@ -309,6 +309,23 @@ public class TCase implements Serializable {
             } else if(output instanceof CArray array && resultOutput instanceof CArray resultArray){
                 _compareArrayMembers(array, resultArray, i);
             }
+            for(int j = 0; j < globalOutputs.size(); j++){
+                CElement globalOutput = globalOutputs.get(j);
+                CElement resultGlobalOutput = resultGlobalOutputs.get(j);
+                if(globalOutput instanceof CVariable variable && resultGlobalOutput instanceof CVariable resultVariable){
+                    variable.values.get(i).setValueStatus(resultVariable.values.get(i).valueStatus);
+                } else if(globalOutput instanceof CEnumInstance enumInstance && resultGlobalOutput instanceof CEnumInstance resultEnumInstance){
+                    enumInstance.values.get(i).setValueStatus(resultEnumInstance.values.get(i).valueStatus);
+                } else if(globalOutput instanceof CStructOrUnionInstance structOrUnionInstance && resultGlobalOutput instanceof CStructOrUnionInstance resultStructOrUnionInstance){
+                    if(structOrUnionInstance.getPointers() != 0) {
+                        structOrUnionInstance.values.get(i).setValueStatus(resultStructOrUnionInstance.values.get(i).valueStatus);
+                    }else{
+                        _compareStructOrUnionMembers(structOrUnionInstance, resultStructOrUnionInstance, i);
+                    }
+                } else if(globalOutput instanceof CArray array && resultGlobalOutput instanceof CArray resultArray){
+                    _compareArrayMembers(array, resultArray, i);
+                }
+            }
 
         }
     }

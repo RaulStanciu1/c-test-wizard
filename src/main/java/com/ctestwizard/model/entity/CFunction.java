@@ -10,6 +10,8 @@ public class CFunction implements CElement {
     private final String strType;
     private String name;
     private List<CElement> parameters;
+    private final String functionPrototype;
+    private final String functionSignature;
     public CFunction(CStorageClass storageClassSpecifier, boolean isInline, String type, String name,
                      List<CElement> parameters){
         this.storageClassSpecifier = storageClassSpecifier;
@@ -17,6 +19,23 @@ public class CFunction implements CElement {
         this.strType = type;
         this.name = name.strip();
         this.parameters = parameters;
+        StringBuilder sb = new StringBuilder();
+        StringBuilder sb2 = new StringBuilder();
+        sb.append(type).append(" ").append(name).append("(");
+        sb2.append(type).append(" ").append(name).append("(");
+        for(int i = 0; i < parameters.size(); i++){
+            sb.append(parameters.get(i).getType());
+            sb2.append(parameters.get(i).getType());
+            sb2.append(" ").append(parameters.get(i).getName());
+            if(i != parameters.size() - 1){
+                sb.append(", ");
+                sb2.append(", ");
+            }
+        }
+        sb.append(")");
+        sb2.append(")");
+        this.functionPrototype = sb.toString();
+        this.functionSignature = sb2.toString();
     }
     public void setParameters(List<CElement> parameters){
         this.parameters = parameters;
@@ -59,6 +78,10 @@ public class CFunction implements CElement {
         return strType;
     }
 
+    public String getFunctionSignature() {
+        return functionSignature;
+    }
+
     @Override
     public CFunction clone(){
         try {
@@ -74,5 +97,9 @@ public class CFunction implements CElement {
         }catch(CloneNotSupportedException e){
             throw new AssertionError();
         }
+    }
+
+    public String toString(){
+        return this.functionPrototype;
     }
 }

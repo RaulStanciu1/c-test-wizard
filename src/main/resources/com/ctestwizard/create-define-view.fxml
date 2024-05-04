@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ctestwizard.controller.CreateDefineController">
+   <children>
+      <Label text="Name" />
+      <TextField fx:id="DefineName" />
+      <Label text="Value" />
+      <TextField fx:id="DefineValue" />
+      <Button mnemonicParsing="false" onAction="#createDefine" text="Create Define" />
+   </children>
+</VBox>

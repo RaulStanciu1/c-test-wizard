@@ -9,17 +9,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
-import javafx.scene.control.cell.TextFieldTreeTableCell;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.paint.Color;
-import javafx.util.Callback;
-import javafx.util.Pair;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,12 +70,8 @@ public class TableFactory {
         return tableView;
     }
 
-    public static TableView<CElement> createExternalFunctionsTable(TInterface tInterface){
-        return createFunctionTable(tInterface,tInterface.getExternalFunctions(),"External Functions");
-    }
-
-    public static TableView<CElement> createLocalFunctionsTable(TInterface tInterface){
-        return createFunctionTable(tInterface,tInterface.getLocalFunctions(),"Local Functions");
+    public static TableView<CElement> createExternalFunctionsTable(TInterface tInterface, TableUpdater tableUpdater){
+        return createFunctionTable(tInterface,tInterface.getExternalFunctions(),"External Functions",tableUpdater);
     }
 
     public static TableView<CElement> createGlobalsTable(TInterface tInterface){
@@ -108,7 +95,7 @@ public class TableFactory {
     }
     public static TableView<CElement> createUserGlobalsTable(TInterface tInterface){
         ObservableList<TPassing> options = FXCollections.observableArrayList(TPassing.IN,TPassing.OUT,TPassing.INOUT,TPassing.NONE);
-        TableColumn<CElement, String> globalColumn = new TableColumn<>("Globals");
+        TableColumn<CElement, String> globalColumn = new TableColumn<>("User Globals");
         TableColumn<CElement, TPassing> passingColumn = new TableColumn<>("Passing");
         globalColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getType()+" "+param.getValue().getName()));
         passingColumn.setCellFactory(ComboBoxTableCell.forTableColumn(options));
@@ -126,7 +113,7 @@ public class TableFactory {
         return globalsTable;
     }
 
-    private static TableView<CElement> createFunctionTable(TInterface tInterface,List<CFunction> functionsList, String columnName){
+    private static TableView<CElement> createFunctionTable(TInterface tInterface,List<CFunction> functionsList, String columnName, TableUpdater tableUpdater){
         TableView<CElement> functionsTable = new TableView<>();
         TableColumn<CElement, String> functionColumn = new TableColumn<>(columnName);
         functionColumn.setCellValueFactory(param -> new SimpleStringProperty(((CFunction)param.getValue()).getStrType()+" "+param.getValue().getName()+"()"));
@@ -139,13 +126,21 @@ public class TableFactory {
         ContextMenu ctxMenu = new ContextMenu();
         MenuItem createStub = new MenuItem("Create Stub");
         MenuItem dontCreateStub = new MenuItem("Don't Create Stub");
+        dontCreateStub.setDisable(true);
         createStub.setOnAction(event -> {
             CFunction function = (CFunction) functionsTable.getSelectionModel().getSelectedItem();
             tInterface.getStubCode().put(function,"");
+            tableUpdater.updateStubCode(tInterface);
+            createStub.setDisable(true);
+            dontCreateStub.setDisable(false);
         });
+
         dontCreateStub.setOnAction(event -> {
             CFunction function = (CFunction) functionsTable.getSelectionModel().getSelectedItem();
             tInterface.getStubCode().remove(function);
+            tableUpdater.updateStubCode(tInterface);
+            createStub.setDisable(false);
+            dontCreateStub.setDisable(true);
         });
 
         ctxMenu.getItems().addAll(createStub,dontCreateStub);
@@ -190,8 +185,7 @@ public class TableFactory {
 
     private static TreeTableColumn<CElement, String> getcElementStringTreeTableColumn(int i) {
         TreeTableColumn<CElement, String> valueColumn = new TreeTableColumn<>(String.valueOf(i +1));
-        int finalI = i;
-        valueColumn.setCellValueFactory(param -> _valueColumnFactory(param, finalI));
+        valueColumn.setCellValueFactory(param -> _valueColumnFactory(param, i));
         valueColumn.setCellFactory(column -> new TreeTableCell<>(){
             private final TextField textField;
             {
@@ -203,40 +197,28 @@ public class TableFactory {
                     }
                 });
             }
-            /*
-            private void updateStructMembers(CStructOrUnionInstance instance){
-                for(CElement structMember:instance.getStructType().getMembers()){
-                    setBackgroundTableCell(structMember);
-                }
-            }
-            private void updateArrayMembers(CArray array){
-                for(CElement element:array.getArrayMembers()){
-                    setBackgroundTableCell(element);
-                }
-            }
-            */
             private void setBackgroundTableCell(CElement element){
                 if(element instanceof CVariable variable) {
-                    if(variable.values.get(finalI).valueStatus == 0) {
+                    if(variable.values.get(i).valueStatus == 0) {
                         setStyle("-fx-background-color: #ff0000;");
-                    }else if(variable.values.get(finalI).valueStatus == 1) {
+                    }else if(variable.values.get(i).valueStatus == 1) {
                         setStyle("-fx-background-color: #00ff00;");
                     }else{
                         setStyle("");
                     }
                 }else if(element instanceof CEnumInstance enumInstance) {
-                    if (enumInstance.values.get(finalI).valueStatus == 0) {
+                    if (enumInstance.values.get(i).valueStatus == 0) {
                         setStyle("-fx-background-color: #ff0000;");
-                    } else if (enumInstance.values.get(finalI).valueStatus == 1) {
+                    } else if (enumInstance.values.get(i).valueStatus == 1) {
                         setStyle("-fx-background-color: #00ff00;");
                     } else {
                         setStyle("");
                     }
                 }else if(element instanceof CStructOrUnionInstance structOrUnionInstance){
                     if(structOrUnionInstance.getPointers()!= 0) {
-                        if (structOrUnionInstance.values.get(finalI).valueStatus == 0) {
+                        if (structOrUnionInstance.values.get(i).valueStatus == 0) {
                             setStyle("-fx-background-color: #ff0000;");
-                        } else if (structOrUnionInstance.values.get(finalI).valueStatus == 1) {
+                        } else if (structOrUnionInstance.values.get(i).valueStatus == 1) {
                             setStyle("-fx-background-color: #00ff00;");
                         } else {
                             setStyle("");
@@ -288,13 +270,13 @@ public class TableFactory {
         valueColumn.setOnEditCommit(event -> {
             CElement element = event.getRowValue().getValue();
             if(element instanceof CVariable variable){
-                variable.values.set(finalI, new CValue(event.getNewValue(),-1));
+                variable.values.set(i, new CValue(event.getNewValue(),-1));
             }else if(element instanceof CStructOrUnionInstance structOrUnionInstance){
                 if(structOrUnionInstance.getPointers()!= 0){
-                    structOrUnionInstance.values.set(finalI, new CValue(event.getNewValue(),-1));
+                    structOrUnionInstance.values.set(i, new CValue(event.getNewValue(),-1));
                 }
             }else if(element instanceof CEnumInstance enumInstance){
-                enumInstance.values.set(finalI, new CValue(event.getNewValue(),-1));
+                enumInstance.values.set(i, new CValue(event.getNewValue(),-1));
             }
         });
         return valueColumn;

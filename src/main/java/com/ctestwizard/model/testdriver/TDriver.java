@@ -2,6 +2,7 @@ package com.ctestwizard.model.testdriver;
 
 
 import com.ctestwizard.model.cparser.CParserDetector;
+import com.ctestwizard.model.entity.CDefine;
 import com.ctestwizard.model.testentity.TObject;
 import com.ctestwizard.model.testentity.TProject;
 import org.apache.commons.io.FileUtils;
@@ -14,22 +15,28 @@ import java.util.List;
 
 public class TDriver implements Serializable {
     private final TProject _parent;
-    private final String sourceFilePath;
-    private final String projectPath;
+    private String sourceFilePath;
+    private  String projectPath;
     private String compiler;
     private String preprocessFlag;
     private String compileFlag;
+    private String testHeaderPath;
     private final List<String> includeDirectories;
     private final List<String> linker;
+    private final List<CDefine> defines;
     public TDriver(TProject parent,String sourceFilePath, String projectPath){
         this._parent = parent;
         this.sourceFilePath = sourceFilePath;
         this.projectPath = projectPath;
+        this.testHeaderPath = projectPath+File.separator+"ctw_test.h";
         this.compiler = "gcc";
         this.preprocessFlag = "-E";
         this.compileFlag = "-c";
         this.includeDirectories = new ArrayList<>();
         this.linker = new ArrayList<>();
+        this.defines = new ArrayList<>();
+        this.defines.add(new CDefine("const",""));
+        this.defines.add(new CDefine("volatile",""));
     }
 
     /**
@@ -158,19 +165,23 @@ public class TDriver implements Serializable {
             throw new Exception("Interface has changed! Please analyze the changes.");
         }
 
-        //Step 2: Create the test driver file from the resource template
+        //Step 2: Create the defines header file
+        TDriverUtils.generateDefinesFile(_parent);
+        //Step 3: Create the test header file
+        TDriverUtils.generateTestHeaderFile(this);
+        //Step 4: Create the test driver file from the resource template
         TDriverUtils.generateTestDriverFile(_parent);
-        //Step 3: Create the stub code file
+        //Step 5: Create the stub code file
         TDriverUtils.createStubCodeFile(testObject,_parent);
-        //Step 4: Generate the test data file
+        //Step 6: Generate the test data file
         TDriverUtils.generateTestDataFile(testObject,_parent);
-        //Step 5: Generate the test steps file
+        //Step 7: Generate the test steps file
         TDriverUtils.generateTestStepsFile(testObject,_parent);
-        //Step 6: Compile the test driver file
+        //Step 8: Compile the test driver file
         TDriverUtils.compileTestDriverFile(this,consoleWriter);
-        //Step 7: Run the test driver file
+        //Step 9: Run the test driver file
         TDriverUtils.runTestDriverFile(this,consoleWriter);
-        //Step 8: Parse the test data file and return the test cases
+        //Step 10: Parse the test data file and return the test cases
         return TDriverUtils.parseTestDataOutputFile(testObject,_parent);
     }
 
@@ -219,5 +230,25 @@ public class TDriver implements Serializable {
 
     public void setCompileFlag(String compileFlag) {
         this.compileFlag = compileFlag;
+    }
+
+    public void setSourceFilePath(String sourceFilePath) {
+        this.sourceFilePath = sourceFilePath;
+    }
+
+    public void setProjectPath(String projectPath) {
+        this.projectPath = projectPath;
+    }
+
+    public List<CDefine> getDefines() {
+        return defines;
+    }
+
+    public String getTestHeaderPath() {
+        return testHeaderPath;
+    }
+
+    public void setTestHeaderPath(String testHeaderPath) {
+        this.testHeaderPath = testHeaderPath;
     }
 }

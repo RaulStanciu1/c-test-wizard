@@ -1,10 +1,11 @@
 package com.ctestwizard.controller;
 
 import com.ctestwizard.MainApplication;
+import com.ctestwizard.model.entity.CDefine;
 import com.ctestwizard.model.entity.CElement;
-import com.ctestwizard.model.entity.CEnumInstance;
-import com.ctestwizard.model.entity.CVariable;
+import com.ctestwizard.model.entity.CFunction;
 import com.ctestwizard.model.testdriver.TDriver;
+import com.ctestwizard.model.testdriver.TProperty;
 import com.ctestwizard.model.testdriver.TResults;
 import com.ctestwizard.model.testentity.TCase;
 import com.ctestwizard.model.testentity.TObject;
@@ -12,19 +13,25 @@ import com.ctestwizard.model.testentity.TProject;
 import com.ctestwizard.view.TableFactory;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Map;
 
 
 public class MainController{
@@ -52,7 +59,24 @@ public class MainController{
     private TextArea Console;
     @FXML
     private Button NewUserGlobalBtn;
-
+    @FXML
+    private ListView<CFunction> StubCodeList;
+    @FXML
+    private Label StubFunctionSignatureLabel;
+    @FXML
+    private TextField StubFunctionSignature;
+    @FXML
+    private Label StubFunctionBodyLabel;
+    @FXML
+    private TextArea StubFunctionBody;
+    @FXML
+    private TableView<TProperty> PropertyTable;
+    @FXML
+    private ListView<CDefine> DefinesList;
+    @FXML
+    private ListView<String> LinkerList;
+    @FXML
+    private ListView<String> IncludeList;
     public void setup(TProject project, Stage parentStage){
         this.project = project;
         this.parentStage = parentStage;
@@ -99,6 +123,10 @@ public class MainController{
         NewTestCaseBtn.setDisable(true);
         NewTestStepBtn.setDisable(true);
 
+        setupPropertyTable();
+        setupDefinesList();
+        setupLinkerList();
+        setupIncludeList();
     }
     @FXML
     public void handleTObjectClick(){
@@ -113,14 +141,41 @@ public class MainController{
         //Add the interface to the interface box
         InterfaceBox.getChildren().removeIf(node -> !(node instanceof ButtonBar));
         NewUserGlobalBtn.setOpacity(1);
-        InterfaceBox.getChildren().add(TableFactory.createExternalFunctionsTable(selectedObject.getTestInterface()));
-        InterfaceBox.getChildren().add(TableFactory.createLocalFunctionsTable(selectedObject.getTestInterface()));
+        InterfaceBox.getChildren().add(TableFactory.createExternalFunctionsTable(selectedObject.getTestInterface(),tInterface->{
+            //Refresh the stub code list
+            StubCodeList.getItems().clear();
+            Map<CFunction,String> stubFunctions = tInterface.getStubCode();
+            stubFunctions.forEach((function, body) -> StubCodeList.getItems().add(function));
+        }));
         InterfaceBox.getChildren().add(TableFactory.createGlobalsTable(selectedObject.getTestInterface()));
         InterfaceBox.getChildren().add(TableFactory.createUserGlobalsTable(selectedObject.getTestInterface()));
 
         //Add the test cases to the test case list
         TestCaseList.getItems().clear();
         selectedObject.getTestCases().forEach(testCase -> TestCaseList.getItems().add(testCase));
+
+        //Add the stub functions
+        StubCodeList.getItems().clear();
+        Map<CFunction,String> stubFunctions = selectedObject.getTestInterface().getStubCode();
+        stubFunctions.forEach((function, body) -> StubCodeList.getItems().add(function));
+        //Upon clicking an element in the stub code list, display the function signature and body
+        StubCodeList.getSelectionModel().selectedItemProperty().addListener((observable,oldFunction,newFunction) -> {
+            if(newFunction == null){
+                StubFunctionSignature.setText("");
+                StubFunctionBody.setText("");
+                StubFunctionSignatureLabel.setDisable(true);
+                StubFunctionBodyLabel.setDisable(true);
+                StubFunctionSignature.setDisable(true);
+                StubFunctionBody.setDisable(true);
+            }else{
+                StubFunctionSignature.setText(newFunction.getFunctionSignature());
+                StubFunctionBody.setText(stubFunctions.get(newFunction));
+                StubFunctionSignatureLabel.setDisable(false);
+                StubFunctionBodyLabel.setDisable(false);
+                StubFunctionSignature.setDisable(false);
+                StubFunctionBody.setDisable(false);
+            }
+        });
     }
 
     @FXML
@@ -238,11 +293,132 @@ public class MainController{
         formStage.show();
     }
 
-    public void addEntryToUserGlobalsTable(CElement entry){
-        TableView<CElement> userGlobalsTable = (TableView<CElement>) InterfaceBox.getChildren().get(4);
-        userGlobalsTable.getItems().add(entry);
+    @FXML
+    public void setStubBody(){
+        TObject selectedObject = TestObjectList.getSelectionModel().getSelectedItem();
+        if(selectedObject == null){
+            return;
+        }
+        CFunction selectedFunction = StubCodeList.getSelectionModel().getSelectedItem();
+        if(selectedFunction == null){
+            return;
+        }
+        selectedObject.getTestInterface().getStubCode().put(selectedFunction,StubFunctionBody.getText());
     }
 
+    @FXML
+    public void commitPropertyChanges(){
+        PropertyTable.getItems().forEach(property -> {
+            switch(property.getProperty()){
+                case "Project Name":
+                    project.setName(property.getValue());
+                    break;
+                case "Compiler":
+                    project.getTestDriver().setCompiler(property.getValue());
+                    break;
+                case "Preprocess Flag":
+                    project.getTestDriver().setPreprocessFlag(property.getValue());
+                    break;
+                case "Compile Flag":
+                    project.getTestDriver().setCompileFlag(property.getValue());
+                    break;
+                case "Source File Path":
+                    project.getTestDriver().setSourceFilePath(property.getValue());
+                    break;
+                case "Project Path":
+                    project.getTestDriver().setProjectPath(property.getValue());
+                    break;
+                case "Test Header":
+                    project.getTestDriver().setTestHeaderPath(property.getValue());
+                    break;
+            }
+        });
+    }
+
+    @FXML
+    public void createDefine(){
+        FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource("create-define-view.fxml"));
+        Stage formStage = new Stage();
+        formStage.initModality(Modality.APPLICATION_MODAL);
+        formStage.initOwner(parentStage);
+        try {
+            Parent root = loader.load();
+            CreateDefineController controller = loader.getController();
+            controller.setup(this,formStage);
+            formStage.setScene(new Scene(root));
+            formStage.setResizable(false);
+            formStage.show();
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText(e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    public void removeSelectedDefine(){
+        CDefine selectedDefine = DefinesList.getSelectionModel().getSelectedItem();
+        if(selectedDefine == null){
+            return;
+        }
+        project.getTestDriver().getDefines().remove(selectedDefine);
+        DefinesList.getItems().remove(selectedDefine);
+    }
+
+    @FXML
+    public void addLinker(){
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Linker");
+        dialog.setHeaderText("Enter the Linker File");
+        dialog.setContentText("Linker:");
+        dialog.showAndWait().ifPresent(linker -> {
+            project.getTestDriver().getLinker().add(linker);
+            LinkerList.getItems().add(linker);
+        });
+    }
+
+    @FXML
+    public void removeSelectedLinker(){
+        String selectedLinker = LinkerList.getSelectionModel().getSelectedItem();
+        if(selectedLinker == null){
+            return;
+        }
+        project.getTestDriver().getLinker().remove(selectedLinker);
+        LinkerList.getItems().remove(selectedLinker);
+    }
+
+    @FXML
+    public void addIncludeDirectory(){
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Include Directory");
+        dialog.setHeaderText("Enter the Include Directory");
+        dialog.setContentText("Include Directory:");
+        dialog.showAndWait().ifPresent(directory -> {
+            project.getTestDriver().getIncludeDirectories().add(directory);
+            IncludeList.getItems().add(directory);
+        });
+    }
+
+    @FXML
+    public void removeSelectedDirectory(){
+        String selectedDirectory = IncludeList.getSelectionModel().getSelectedItem();
+        if(selectedDirectory == null){
+            return;
+        }
+        project.getTestDriver().getIncludeDirectories().remove(selectedDirectory);
+        IncludeList.getItems().remove(selectedDirectory);
+    }
+
+    public void updateDefines(CDefine define){
+        project.getTestDriver().getDefines().add(define);
+        DefinesList.getItems().add(define);
+    }
+
+    public void addEntryToUserGlobalsTable(CElement entry){
+        TableView<CElement> userGlobalsTable = (TableView<CElement>) InterfaceBox.getChildren().get(3);
+        userGlobalsTable.getItems().add(entry);
+    }
 
     private void startMemoryMonitoring(){
         AnimationTimer timer = new AnimationTimer() {
@@ -255,5 +431,49 @@ public class MainController{
             }
         };
         timer.start();
+    }
+
+    private void setupPropertyTable(){
+        PropertyTable.getColumns().clear();
+        PropertyTable.getItems().clear();
+        TableColumn<TProperty,String> propertyColumn = new TableColumn<>("Property");
+        propertyColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getProperty()));
+        TableColumn<TProperty,String> valueColumn = new TableColumn<>("Value");
+        valueColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getValue()));
+        valueColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        valueColumn.setOnEditCommit(event -> {
+            TProperty property = event.getRowValue();
+            property.setValue(event.getNewValue());
+        });
+        PropertyTable.getColumns().add(propertyColumn);
+        PropertyTable.getColumns().add(valueColumn);
+        ObservableList<TProperty> tableData = FXCollections.observableArrayList(
+                new TProperty("Project Name",project.getName()),
+                new TProperty("Compiler",project.getTestDriver().getCompiler()),
+                new TProperty("Preprocess Flag",project.getTestDriver().getPreprocessFlag()),
+                new TProperty("Compile Flag",project.getTestDriver().getCompileFlag()),
+                new TProperty("Source File Path",project.getTestDriver().getSourceFilePath()),
+                new TProperty("Project Path",project.getTestDriver().getProjectPath()),
+                new TProperty("Test Header",project.getTestDriver().getTestHeaderPath())
+        );
+        PropertyTable.setEditable(true);
+
+        PropertyTable.setItems(tableData);
+
+    }
+
+    private void setupDefinesList(){
+        DefinesList.getItems().clear();
+        project.getTestDriver().getDefines().forEach(define -> DefinesList.getItems().add(define));
+    }
+
+    private void setupLinkerList(){
+        LinkerList.getItems().clear();
+        project.getTestDriver().getLinker().forEach(linker -> LinkerList.getItems().add(linker));
+    }
+
+    private void setupIncludeList(){
+        IncludeList.getItems().clear();
+        project.getTestDriver().getIncludeDirectories().forEach(include -> IncludeList.getItems().add(include));
     }
 }

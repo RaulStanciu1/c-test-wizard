@@ -9,8 +9,8 @@ A desktop application used for unit testing C code.
 - [x] Test Execution
 - [x] Test Results
 - [x] Completing User Global Functionality
-- [ ] Stubbing Functionality
-- [ ] Test Environment Editor
+- [x] Stubbing Functionality
+- [x] Test Environment Editor
 - [ ] Test Case Editor
 - [ ] Test Project List
 - [ ] Test Generation More Robust

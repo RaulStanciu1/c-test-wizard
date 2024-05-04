@@ -4,7 +4,6 @@ import com.ctestwizard.model.entity.*;
 import com.ctestwizard.model.testentity.TCase;
 import com.ctestwizard.model.testentity.TObject;
 import com.ctestwizard.model.testentity.TProject;
-import javafx.util.Pair;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -221,6 +220,36 @@ public class TDriverUtils {
         return false;
     }
 
+    public static void generateDefinesFile(TProject parent) throws Exception{
+        File definesFile = new File(parent.getTestDriver().getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_defines.h");
+        if(definesFile.exists()){
+            if(!definesFile.delete()){
+                throw new Exception("Failed to delete defines file");
+            }
+        }
+        if(!definesFile.createNewFile()){
+            throw new Exception("Failed to create defines file");
+        }
+        StringBuilder definesFileContent = new StringBuilder();
+        definesFileContent.append("#ifndef CTW_TEST_DEFINES_H\n");
+        definesFileContent.append("#define CTW_TEST_DEFINES_H\n");
+        for(CDefine define : parent.getTestDriver().getDefines()){
+            definesFileContent.append("#define ").append(define.name()).append(" ").append(define.value()).append("\n");
+        }
+        definesFileContent.append("#endif\n");
+        FileUtils.writeStringToFile(definesFile,definesFileContent.toString(),"UTF-8",false);
+    }
+
+    public static void generateTestHeaderFile(TDriver testDriver) throws Exception{
+        File testHeaderFile = new File(testDriver.getTestHeaderPath());
+        if(testHeaderFile.exists()){
+            return;
+        }
+        if(!testHeaderFile.createNewFile()){
+            throw new Exception("Failed to create test header file");
+        }
+    }
+
     public static void generateTestDriverFile(TProject parent) throws IOException, NullPointerException {
         File testDriverFile = new File(parent.getTestDriver().getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_driver.c");
         if (!testDriverFile.exists()) {
@@ -229,7 +258,15 @@ public class TDriverUtils {
             }
         }
         String TEST_CASES_DEFINE = "#define TEST_CASES " + parent.getTestObjects().get(0).getTestCases().size() + "\n";
+        File testHeaderFile = new File(parent.getTestDriver().getTestHeaderPath());
+        if (!testHeaderFile.exists()) {
+            throw new NullPointerException("Test header file not found");
+        }
+        String path = testHeaderFile.getAbsolutePath();
         String testDriverFileContent = """
+                #include "ctw_test_defines.h"
+                """+
+                "#include \""+path+"\"\n"+"""
                 #include "ctw_src_pre.c"
                 #include "ctw_stubs.c"
                 #include "ctw_test_data.c"
@@ -259,10 +296,14 @@ public class TDriverUtils {
     public static void createStubCodeFile(TObject testObject, TProject parent) throws IOException {
         //Generate the stub file based on the test object's interface
         File stubCodeFile = getTestFile(parent, "ctw_stubs.c");
+        for (CElement userGlobal : testObject.getTestInterface().getUserGlobals().keySet()) {
+            String userGlobalContent = userGlobal.getType() + " " + userGlobal.getName() + ";\n";
+            FileUtils.writeStringToFile(stubCodeFile, userGlobalContent, "UTF-8", true);
+        }
 
         for (CFunction stubbedFunction : testObject.getTestInterface().getStubCode().keySet()) {
             String stubCode = testObject.getTestInterface().getStubCode().get(stubbedFunction);
-            StringBuilder functionStub = new StringBuilder(stubbedFunction.getStrType() + " " + "CTW_" + stubbedFunction.getName() + "(");
+            StringBuilder functionStub = new StringBuilder(stubbedFunction.getStrType() + " " +stubbedFunction.getName() + "(");
             for (int i = 0; i < stubbedFunction.getParameters().size(); i++) {
                 functionStub.append(stubbedFunction.getParameters().get(i).getType()).append(" ").append(stubbedFunction.getParameters().get(i).getName());
                 if (i != stubbedFunction.getParameters().size() - 1) {
@@ -272,13 +313,9 @@ public class TDriverUtils {
             functionStub.append("){\n");
             functionStub.append(stubCode);
             functionStub.append("}\n");
-            functionStub.append("#define ").append(stubbedFunction.getName()).append(" CTW_").append(stubbedFunction.getName()).append("\n");
             FileUtils.writeStringToFile(stubCodeFile, functionStub.toString(), "UTF-8", true);
         }
-        for (CElement userGlobal : testObject.getTestInterface().getUserGlobals().keySet()) {
-            String userGlobalContent = userGlobal.getType() + " " + userGlobal.getName() + ";\n";
-            FileUtils.writeStringToFile(stubCodeFile, userGlobalContent, "UTF-8", true);
-        }
+
     }
 
     public static void generateTestDataFile(TObject testObject, TProject parent) throws IOException {
