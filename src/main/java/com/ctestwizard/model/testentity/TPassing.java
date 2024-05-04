@@ -1,5 +1,7 @@
 package com.ctestwizard.model.testentity;
 
-public enum TPassing {
+import java.io.Serializable;
+
+public enum TPassing implements Serializable {
     IN,OUT,INOUT,NONE
 }

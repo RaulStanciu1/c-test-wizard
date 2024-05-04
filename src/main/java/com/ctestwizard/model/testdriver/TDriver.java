@@ -17,23 +17,15 @@ public class TDriver implements Serializable {
     private final TProject _parent;
     private String sourceFilePath;
     private  String projectPath;
-    private String compiler;
-    private String preprocessFlag;
-    private String compileFlag;
     private String testHeaderPath;
-    private final List<String> includeDirectories;
-    private final List<String> linker;
+    private final TCompiler compiler;
     private final List<CDefine> defines;
-    public TDriver(TProject parent,String sourceFilePath, String projectPath){
+    public TDriver(TProject parent,String sourceFilePath, String projectPath, TCompiler compiler){
         this._parent = parent;
         this.sourceFilePath = sourceFilePath;
         this.projectPath = projectPath;
         this.testHeaderPath = projectPath+File.separator+"ctw_test.h";
-        this.compiler = "gcc";
-        this.preprocessFlag = "-E";
-        this.compileFlag = "-c";
-        this.includeDirectories = new ArrayList<>();
-        this.linker = new ArrayList<>();
+        this.compiler = compiler;
         this.defines = new ArrayList<>();
         this.defines.add(new CDefine("const",""));
         this.defines.add(new CDefine("volatile",""));
@@ -60,11 +52,17 @@ public class TDriver implements Serializable {
             FileUtils.copyFile(sourceFile,sourceFileCopy);
 
             //Preprocess the source file copy and save it
-            ProcessBuilder processBuilder = new ProcessBuilder(compiler);
-            processBuilder.command().add(preprocessFlag);
+            ProcessBuilder processBuilder = new ProcessBuilder(compiler.getCompiler());
+            processBuilder.command().add(compiler.getPreprocessFlag());
             processBuilder.command().add(sourceFileCopy.getAbsolutePath());
             processBuilder.directory(projectDir);
-            processBuilder.command().add("-o");
+            for(String includeDir : compiler.getIncludeDirectories()){
+                processBuilder.command().add(compiler.getIncludeFlag()+includeDir);
+            }
+            for(String linkerFile : compiler.getLinkerFiles()){
+                processBuilder.command().add(compiler.getLinkerFlag()+linkerFile);
+            }
+            processBuilder.command().add(compiler.getOutputFlag());
             processBuilder.command().add("ctw_src_pre.c");
             Process process = processBuilder.start();
             consoleWriter.redirectOutput(process);
@@ -81,11 +79,17 @@ public class TDriver implements Serializable {
         File preprocessedFile = new File(projectDir.getAbsolutePath()+File.separator+"ctw_src_pre.c");
         if(!preprocessedFile.exists()){
             //Preprocess the source file copy and save it
-            ProcessBuilder processBuilder = new ProcessBuilder(compiler);
-            processBuilder.command().add(preprocessFlag);
+            ProcessBuilder processBuilder = new ProcessBuilder(compiler.getCompiler());
+            processBuilder.command().add(compiler.getPreprocessFlag());
             processBuilder.command().add(sourceFileCopy.getAbsolutePath());
+            for(String includeDir : compiler.getIncludeDirectories()){
+                processBuilder.command().add(compiler.getIncludeFlag()+includeDir);
+            }
+            for(String linkerFile : compiler.getLinkerFiles()){
+                processBuilder.command().add(compiler.getLinkerFlag()+linkerFile);
+            }
             processBuilder.directory(projectDir);
-            processBuilder.command().add("-o");
+            processBuilder.command().add(compiler.getOutputFlag());
             processBuilder.command().add("ctw_src_pre.c");
             Process process = processBuilder.start();
             consoleWriter.redirectOutput(process);
@@ -96,11 +100,17 @@ public class TDriver implements Serializable {
         }
         if(!FileUtils.contentEquals(sourceFile,sourceFileCopy)){
             //Preprocess the source file copy and save it
-            ProcessBuilder processBuilder = new ProcessBuilder(compiler);
-            processBuilder.command().add(preprocessFlag);
+            ProcessBuilder processBuilder = new ProcessBuilder(compiler.getCompiler());
+            processBuilder.command().add(compiler.getPreprocessFlag());
             processBuilder.command().add(sourceFileCopy.getAbsolutePath());
+            for(String includeDir : compiler.getIncludeDirectories()){
+                processBuilder.command().add(compiler.getIncludeFlag()+includeDir);
+            }
+            for(String linkerFile : compiler.getLinkerFiles()){
+                processBuilder.command().add(compiler.getLinkerFlag()+linkerFile);
+            }
             processBuilder.directory(projectDir);
-            processBuilder.command().add("-o");
+            processBuilder.command().add(compiler.getOutputFlag());
             processBuilder.command().add("ctw_src_pre.c");
             Process process = processBuilder.start();
             consoleWriter.redirectOutput(process);
@@ -182,15 +192,10 @@ public class TDriver implements Serializable {
         //Step 9: Run the test driver file
         TDriverUtils.runTestDriverFile(this,consoleWriter);
         //Step 10: Parse the test data file and return the test cases
-        return TDriverUtils.parseTestDataOutputFile(testObject,_parent);
-    }
-
-    public void addIncludeDirectory(String includeDirectory){
-        this.includeDirectories.add(includeDirectory);
-    }
-
-    public void addLinker(String linker){
-        this.linker.add(linker);
+        List<TResults> results = TDriverUtils.parseTestDataOutputFile(testObject,_parent);
+        //Step 11: Clean up the test driver files
+        //TDriverUtils.cleanUpTestDriverFiles(this);
+        return results;
     }
 
     public String getSourceFilePath() {
@@ -202,34 +207,34 @@ public class TDriver implements Serializable {
     }
 
     public List<String> getIncludeDirectories() {
-        return includeDirectories;
+        return compiler.getIncludeDirectories();
     }
     public List<String> getLinker() {
-        return linker;
+        return compiler.getLinkerFiles();
     }
 
     public String getCompiler() {
-        return compiler;
+        return compiler.getCompiler();
     }
 
     public void setCompiler(String compiler) {
-        this.compiler = compiler;
+        this.compiler.setCompiler(compiler);
     }
 
     public String getPreprocessFlag() {
-        return preprocessFlag;
+        return compiler.getPreprocessFlag();
     }
 
     public void setPreprocessFlag(String preprocessFlag) {
-        this.preprocessFlag = preprocessFlag;
+        this.compiler.setPreprocessFlag(preprocessFlag);
     }
 
     public String getCompileFlag() {
-        return compileFlag;
+        return this.compiler.getCompileFlag();
     }
 
     public void setCompileFlag(String compileFlag) {
-        this.compileFlag = compileFlag;
+        this.compiler.setCompileFlag(compileFlag);
     }
 
     public void setSourceFilePath(String sourceFilePath) {
@@ -250,5 +255,29 @@ public class TDriver implements Serializable {
 
     public void setTestHeaderPath(String testHeaderPath) {
         this.testHeaderPath = testHeaderPath;
+    }
+
+    public String getOutputFlag() {
+        return compiler.getOutputFlag();
+    }
+
+    public void setOutputFlag(String outputFlag) {
+        this.compiler.setOutputFlag(outputFlag);
+    }
+
+    public String getLinkerFlag() {
+        return compiler.getLinkerFlag();
+    }
+
+    public void setLinkerFlag(String linkerFlag) {
+        this.compiler.setLinkerFlag(linkerFlag);
+    }
+
+    public String getIncludeFlag() {
+        return compiler.getIncludeFlag();
+    }
+
+    public void setIncludeFlag(String includeFlag) {
+        this.compiler.setIncludeFlag(includeFlag);
     }
 }

@@ -1,10 +1,11 @@
 package com.ctestwizard.model.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CEnum implements CElement{
+public class CEnum implements CElement, Serializable {
     private String name;
     private List<String> members;
     private final Map<String, Integer> symbolMap;

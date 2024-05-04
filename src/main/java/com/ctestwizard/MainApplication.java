@@ -1,6 +1,9 @@
 package com.ctestwizard;
 
-import com.ctestwizard.controller.MainController;
+import com.ctestwizard.controller.ProjectListController;
+import com.ctestwizard.model.entity.CElement;
+import com.ctestwizard.model.entity.CVariable;
+import com.ctestwizard.model.testdriver.TCompiler;
 import com.ctestwizard.model.testentity.TCase;
 import com.ctestwizard.model.testentity.TObject;
 import com.ctestwizard.model.testentity.TProject;
@@ -10,18 +13,20 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+
 public class MainApplication extends Application {
     @Override
     public void start(Stage stage) throws Exception {
-        TProject project = TProject.newTProject("test_project", "src/main/resources/test_project/test.c", "src/main/resources/test_project");
-        TObject testObject = project.getTestObjects().get(0);
-        testObject.getTestCases().add(TCase.newTestCase(testObject));
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("main-view.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("project-list.fxml"));
         Parent root = loader.load();
-        MainController controller = loader.getController();
-        controller.setup(project,stage);
+        Scene scene = new Scene(root);
+        ProjectListController controller = loader.getController();
+        controller.setup(stage);
         controller.init();
-        stage.setScene(new Scene(root));
+        stage.setScene(scene);
         stage.show();
     }
 

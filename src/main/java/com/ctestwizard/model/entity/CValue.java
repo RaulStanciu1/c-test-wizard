@@ -1,8 +1,10 @@
 package com.ctestwizard.model.entity;
 
-public class CValue implements Cloneable{
+import java.io.Serializable;
+
+public class CValue implements Cloneable, Serializable {
     public String value;
-    public int valueStatus; /* -1 = no status 0 = failed 1 = passed */
+    public Integer valueStatus; /* -1 = no status 0 = failed 1 = passed */
     public CValue(String value, int valueStatus){
         this.value = value;
         this.valueStatus = valueStatus;

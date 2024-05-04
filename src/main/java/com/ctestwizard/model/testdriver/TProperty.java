@@ -1,6 +1,8 @@
 package com.ctestwizard.model.testdriver;
 
-public class TProperty {
+import java.io.Serializable;
+
+public class TProperty implements Serializable {
     private String property;
     private String value;
     public TProperty(String property, String value){

@@ -1,11 +1,12 @@
 package com.ctestwizard.model.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CArray implements CElement{
+public class CArray implements CElement, Serializable {
     private CElement type;
     private List<Integer> arraySpecifiers;
     private List<CElement> arrayMembers;

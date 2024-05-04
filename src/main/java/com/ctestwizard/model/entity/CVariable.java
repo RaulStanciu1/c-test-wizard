@@ -1,16 +1,15 @@
 package com.ctestwizard.model.entity;
 
 
-import javafx.util.Pair;
-
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CVariable implements CElement {
+public class CVariable implements CElement, Serializable {
     private String type;
     private String name;
-    private int pointers;
+    private Integer pointers;
 
     public List<CValue> values;
 

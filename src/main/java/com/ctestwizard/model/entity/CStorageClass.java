@@ -1,6 +1,8 @@
 package com.ctestwizard.model.entity;
 
-public enum CStorageClass {
+import java.io.Serializable;
+
+public enum CStorageClass implements Serializable {
     TYPEDEF,EXTERN,STATIC,THREAD_LOCAL,AUTO,REGISTER,NONE;
 
     public static CStorageClass strToStorageClass(String str){

@@ -1,11 +1,12 @@
 package com.ctestwizard.model.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CFunction implements CElement {
+public class CFunction implements CElement , Serializable {
     private final CStorageClass storageClassSpecifier;
-    private boolean isInline;
+    private Boolean isInline;
     private CElement retType;
     private final String strType;
     private String name;

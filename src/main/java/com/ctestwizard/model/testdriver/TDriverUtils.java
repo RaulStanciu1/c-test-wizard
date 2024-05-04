@@ -374,7 +374,7 @@ public class TDriverUtils {
         for (int i = 0; i < testObject.getTestCases().size(); i++) {
             for (int j = 0; j < testObject.getTestCases().get(i).getTSteps(); j++) {
                 testStepsFileContent.append("void ctw_test_step_").append(i).append("_").append(j).append("(){\n");
-                testStepsFileContent.append("FILE* TEST_DATA_FILE = fopen(\"test_data_output.txt\",\"w\");\n");
+                testStepsFileContent.append("FILE* TEST_DATA_FILE = fopen(\"test_data_output.txt\",\"a\");\n");
                 testStepsFileContent.append(TWriter.getPreStepContent(testObject.getTestCases().get(i), j));
                 testStepsFileContent.append(TWriter.getStepContent(testObject.getTestCases().get(i), j));
                 testStepsFileContent.append(TWriter.getPostStepContent(i, testObject.getTestCases().get(i), j));
@@ -523,6 +523,37 @@ public class TDriverUtils {
             if(elementNameIndex != elementMembers.size() - 1){
                 throw new Exception("Failed to parse test results");
             }
+        }
+    }
+
+    public static void cleanUpTestDriverFiles(TDriver testDriver){
+        File testDriverFile = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_driver.c");
+        File testStepsFile = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_steps.c");
+        File testDataFile = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_data.c");
+        File stubCodeFile = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "ctw_stubs.c");
+        File testDataOutputFile = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "test_data_output.txt");
+        File testDriverExecutable = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_driver.exe");
+        File testDefinesFile = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_defines.h");
+        if(testDefinesFile.exists()){
+            testDefinesFile.delete();
+        }
+        if(testDriverExecutable.exists()){
+            testDriverExecutable.delete();
+        }
+        if(testDriverFile.exists()){
+            testDriverFile.delete();
+        }
+        if(testStepsFile.exists()){
+            testStepsFile.delete();
+        }
+        if(testDataFile.exists()){
+            testDataFile.delete();
+        }
+        if(stubCodeFile.exists()){
+            stubCodeFile.delete();
+        }
+        if(testDataOutputFile.exists()){
+            testDataOutputFile.delete();
         }
     }
 }

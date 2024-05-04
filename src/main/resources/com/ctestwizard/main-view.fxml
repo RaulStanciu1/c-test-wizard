@@ -26,39 +26,18 @@
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
-        <Menu mnemonicParsing="false" text="File">
-          <items>
-            <MenuItem mnemonicParsing="false" text="New" />
-            <MenuItem mnemonicParsing="false" text="Open…" />
-            <Menu mnemonicParsing="false" text="Open Recent" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Close" />
-            <MenuItem mnemonicParsing="false" text="Save" />
-            <MenuItem mnemonicParsing="false" text="Save As…" />
-            <MenuItem mnemonicParsing="false" text="Revert" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Preferences…" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Quit" />
-          </items>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Edit">
-          <items>
-            <MenuItem mnemonicParsing="false" text="Undo" />
-            <MenuItem mnemonicParsing="false" text="Redo" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Cut" />
-            <MenuItem mnemonicParsing="false" text="Copy" />
-            <MenuItem mnemonicParsing="false" text="Paste" />
-            <MenuItem mnemonicParsing="false" text="Delete" />
-            <SeparatorMenuItem mnemonicParsing="false" />
-            <MenuItem mnemonicParsing="false" text="Select All" />
-            <MenuItem mnemonicParsing="false" text="Unselect All" />
-          </items>
-        </Menu>
+            <Menu mnemonicParsing="false" text="Project">
+              <items>
+                <MenuItem mnemonicParsing="false" onAction="#saveProject" text="Save Project" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" onAction="#staticAnalysis" text="Static Analysis" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" onAction="#closeProject" text="Close Project" />
+              </items>
+            </Menu>
         <Menu mnemonicParsing="false" text="Help">
           <items>
-            <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
+            <MenuItem mnemonicParsing="false" text="About CTestWizard" />
           </items>
         </Menu>
       </menus>
@@ -193,7 +172,25 @@
                         <TextArea fx:id="Console" editable="false" prefHeight="200.0" prefWidth="200.0" />
                      </content>
                 </Tab>
-                <Tab text="Test Case Definition" />
+                <Tab text="Test Case Definition">
+                     <content>
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <HBox alignment="CENTER">
+                                 <children>
+                                    <Label fx:id="TestCaseTitleLabel" disable="true" text="Title:" />
+                                    <TextField fx:id="TestCaseTitle" disable="true" onKeyTyped="#changeTitle" />
+                                 </children>
+                              </HBox>
+                              <HBox alignment="CENTER">
+                                 <children>
+                                    <Label fx:id="TestCaseDescriptionLabel" disable="true" text="Description:" />
+                                    <TextArea fx:id="TestCaseDescription" disable="true" onKeyTyped="#changeDescription" prefHeight="200.0" prefWidth="200.0" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </content></Tab>
               </tabs>
             </TabPane>
         </items>

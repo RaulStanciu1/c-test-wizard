@@ -1,9 +1,10 @@
 package com.ctestwizard.model.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CStructOrUnion implements CElement{
+public class CStructOrUnion implements CElement, Serializable {
     private String name;
     private List<CElement> members;
     public CStructOrUnion(String name, List<CElement> members){

@@ -77,6 +77,14 @@ public class MainController{
     private ListView<String> LinkerList;
     @FXML
     private ListView<String> IncludeList;
+    @FXML
+    private Label TestCaseTitleLabel;
+    @FXML
+    private TextField TestCaseTitle;
+    @FXML
+    private Label TestCaseDescriptionLabel;
+    @FXML
+    private TextArea TestCaseDescription;
     public void setup(TProject project, Stage parentStage){
         this.project = project;
         this.parentStage = parentStage;
@@ -186,11 +194,35 @@ public class MainController{
         if(selectedCase == null){
             return;
         }
+        TestCaseTitle.setText(selectedCase.getTitle());
+        TestCaseDescription.setText(selectedCase.getDescription());
+        TestCaseTitleLabel.setDisable(false);
+        TestCaseDescriptionLabel.setDisable(false);
+        TestCaseTitle.setDisable(false);
+        TestCaseDescription.setDisable(false);
         NewTestStepBtn.setDisable(false);
         TestDataBox.getChildren().add(TableFactory.createParameterTable(selectedCase));
         TestDataBox.getChildren().add(TableFactory.createInputGlobalsTable(selectedCase));
         TestDataBox.getChildren().add(TableFactory.createOutputGlobalsTable(selectedCase));
         TestDataBox.getChildren().add(TableFactory.createOutputTable(selectedCase));
+    }
+
+    @FXML
+    public void changeTitle(){
+        TCase selectedCase = TestCaseList.getSelectionModel().getSelectedItem();
+        if(selectedCase == null){
+            return;
+        }
+        selectedCase.setTitle(TestCaseTitle.getText());
+    }
+
+    @FXML
+    public void changeDescription(){
+        TCase selectedCase = TestCaseList.getSelectionModel().getSelectedItem();
+        if(selectedCase == null){
+            return;
+        }
+        selectedCase.setDescription(TestCaseDescription.getText());
     }
 
     @FXML
@@ -322,6 +354,9 @@ public class MainController{
                 case "Compile Flag":
                     project.getTestDriver().setCompileFlag(property.getValue());
                     break;
+                case "Output Flag":
+                    project.getTestDriver().setOutputFlag(property.getValue());
+                    break;
                 case "Source File Path":
                     project.getTestDriver().setSourceFilePath(property.getValue());
                     break;
@@ -331,6 +366,7 @@ public class MainController{
                 case "Test Header":
                     project.getTestDriver().setTestHeaderPath(property.getValue());
                     break;
+
             }
         });
     }
@@ -410,6 +446,33 @@ public class MainController{
         IncludeList.getItems().remove(selectedDirectory);
     }
 
+    @FXML
+    public void saveProject(){
+        try{
+            TProject.archiveProject(project);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Success");
+            alert.setHeaderText("Project Saved");
+            alert.showAndWait();
+        }catch(Exception e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Could not save project");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    public void closeProject(){
+
+    }
+
+    @FXML
+    public void staticAnalysis(){
+        
+    }
+
     public void updateDefines(CDefine define){
         project.getTestDriver().getDefines().add(define);
         DefinesList.getItems().add(define);
@@ -452,6 +515,7 @@ public class MainController{
                 new TProperty("Compiler",project.getTestDriver().getCompiler()),
                 new TProperty("Preprocess Flag",project.getTestDriver().getPreprocessFlag()),
                 new TProperty("Compile Flag",project.getTestDriver().getCompileFlag()),
+                new TProperty("Output Flag",project.getTestDriver().getOutputFlag()),
                 new TProperty("Source File Path",project.getTestDriver().getSourceFilePath()),
                 new TProperty("Project Path",project.getTestDriver().getProjectPath()),
                 new TProperty("Test Header",project.getTestDriver().getTestHeaderPath())

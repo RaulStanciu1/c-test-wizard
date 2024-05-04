@@ -11,16 +11,16 @@ import java.util.List;
 
 public class TCase implements Serializable {
     private final TObject parent;
-    private int id;
+    private Integer tCaseId;
     private String title;
     private String description;
     private List<CElement> parameters;
     private List<CElement> inputGlobals;
     private List<CElement> outputGlobals;
     private CElement output;
-    private int tSteps;
+    private Integer tSteps;
     public TCase(TObject parent, int id){
-        this.id = id;
+        this.tCaseId = id;
         this.tSteps = 0;
         this.parent = parent;
         this.title = "";
@@ -426,6 +426,10 @@ public class TCase implements Serializable {
     }
 
     public int getId(){
-        return id;
+        return tCaseId;
+    }
+
+    public void setId(int id){
+        this.tCaseId = id;
     }
 }

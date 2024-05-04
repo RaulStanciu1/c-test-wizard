@@ -1,15 +1,14 @@
 package com.ctestwizard.model.entity;
 
-import javafx.util.Pair;
-
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CEnumInstance implements CElement{
+public class CEnumInstance implements CElement, Serializable {
     private CEnum enumType;
     private String name;
-    private int pointers;
+    private Integer pointers;
     public List<CValue> values = new ArrayList<>();
     public CEnumInstance(CEnum type, String instanceStr){
         this.enumType = type;

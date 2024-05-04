@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ctestwizard.controller.CreateProjectController">
+   <children>
+      <TabPane tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="Project">
+               <content>
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <Label text="Project Name:" />
+                        <TextField fx:id="ProjectName" />
+                        <Label text="Source File Path:" />
+                        <HBox alignment="CENTER">
+                           <children>
+                              <TextField fx:id="SourceFilePath" />
+                              <Button mnemonicParsing="false" onAction="#selectSourceFile" text="..." />
+                           </children>
+                        </HBox>
+                        <Label text="Project Path:" />
+                        <HBox alignment="CENTER">
+                           <children>
+                              <TextField fx:id="ProjectPath" />
+                              <Button mnemonicParsing="false" onAction="#selectProjectDirectory" text="..." />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </content>
+          </Tab>
+          <Tab text="Compiler">
+               <content>
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <Label text="Compiler Command:" />
+                        <TextField fx:id="CompilerCommand" />
+                        <Label text="Preprocess Flag:" />
+                        <TextField fx:id="PreprocessFlag" />
+                        <Label text="Compile Flag:" />
+                        <TextField fx:id="CompileFlag" />
+                        <Label text="Output Flag:" />
+                        <TextField fx:id="OutputFlag" />
+                        <Label text="Include Flag:" />
+                        <TextField fx:id="IncludeFlag" />
+                        <Label text="Linker Flag:" />
+                        <TextField fx:id="LinkerFlag" />
+                     </children>
+                  </VBox>
+               </content>
+          </Tab>
+            <Tab text="Include">
+               <content>
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <ButtonBar prefHeight="40.0" prefWidth="200.0">
+                          <buttons>
+                            <Button mnemonicParsing="false" text="Add" />
+                          </buttons>
+                        </ButtonBar>
+                        <Label text="Include Directories:" />
+                        <ListView fx:id="IncludeDirectories" prefHeight="200.0" prefWidth="200.0" />
+                     </children>
+                  </VBox>
+               </content>
+            </Tab>
+            <Tab text="Linker">
+               <content>
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <ButtonBar prefHeight="40.0" prefWidth="200.0">
+                          <buttons>
+                            <Button mnemonicParsing="false" text="Add" />
+                          </buttons>
+                        </ButtonBar>
+                        <Label text="Linker:" />
+                        <ListView fx:id="Linker" prefHeight="200.0" prefWidth="200.0" />
+                     </children>
+                  </VBox>
+               </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+      <Button contentDisplay="TOP" mnemonicParsing="false" onAction="#createProject" text="Create Project" />
+   </children>
+</VBox>

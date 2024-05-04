@@ -8,7 +8,7 @@ import java.util.List;
 public class TResults implements Serializable {
     private final CElement output;
     private final List<CElement> globalOutputs;
-    public boolean passed;
+    public Boolean passed;
     public TResults(CElement output, List<CElement> globalOutputs){
         this.output = output;
         this.globalOutputs = globalOutputs;
