@@ -1,6 +1,6 @@
 package com.ctestwizard.controller;
 
-import com.ctestwizard.model.entity.CDefine;
+import com.ctestwizard.model.code.entity.CDefine;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;

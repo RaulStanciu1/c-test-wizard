@@ -1,17 +1,13 @@
 package com.ctestwizard.controller;
 
-import com.ctestwizard.model.testdriver.TCompiler;
-import com.ctestwizard.model.testentity.TCase;
-import com.ctestwizard.model.testentity.TObject;
-import com.ctestwizard.model.testentity.TProject;
+import com.ctestwizard.model.test.driver.TCompiler;
+import com.ctestwizard.model.test.entity.TProject;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import java.io.Serializable;
-import java.lang.reflect.Field;
 
 import java.io.File;
 import java.util.List;

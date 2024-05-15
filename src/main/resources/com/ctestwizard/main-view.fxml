@@ -48,9 +48,27 @@
             <items>
                   <VBox fx:id="MasterBox" alignment="TOP_CENTER">
                      <children>
-                        <ListView fx:id="TestObjectList" onMouseClicked="#handleTObjectClick" />
+                        <TableView fx:id="TestObjectTable" onMouseClicked="#handleTObjectClick">
+                          <columns>
+                            <TableColumn fx:id="TestObjectColumn" prefWidth="174.39998477697372" text="Test Object" />
+                            <TableColumn fx:id="TestObjectRsColumn" prefWidth="46.399993896484375" text="RS" />
+                              <TableColumn fx:id="TestObjectCovColumn" prefWidth="53.600006103515625" text="COV" />
+                          </columns>
+                           <columnResizePolicy>
+                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                           </columnResizePolicy>
+                        </TableView>
                         <Button fx:id="ExecuteTestObjectBtn" mnemonicParsing="false" onAction="#handleExecuteTestObject" text="Execute Test Object" />
-                        <ListView fx:id="TestCaseList" onMouseClicked="#handleTCaseClick" />
+                        <TableView fx:id="TestCaseTable" onMouseClicked="#handleTCaseClick">
+                          <columns>
+                            <TableColumn fx:id="TestCaseIdColumn" prefWidth="75.0" text="ID" />
+                            <TableColumn fx:id="TestCaseTitleColumn" prefWidth="48.79998779296875" text="Title" />
+                              <TableColumn fx:id="TestCaseRsColumn" prefWidth="56.79998016357422" text="RS" />
+                          </columns>
+                           <columnResizePolicy>
+                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                           </columnResizePolicy>
+                        </TableView>
                         <Button fx:id="NewTestCaseBtn" mnemonicParsing="false" onAction="#handleCreateNewTestCase" text="New Test Case" />
                         <Button fx:id="NewTestStepBtn" mnemonicParsing="false" onAction="#handleNewTestStep" text="New Test Step" />
                      </children>

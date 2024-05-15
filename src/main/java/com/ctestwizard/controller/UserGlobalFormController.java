@@ -1,9 +1,9 @@
 package com.ctestwizard.controller;
 
-import com.ctestwizard.model.entity.*;
-import com.ctestwizard.model.testentity.TObject;
-import com.ctestwizard.model.testentity.TPassing;
-import com.ctestwizard.model.testentity.TProject;
+import com.ctestwizard.model.code.entity.*;
+import com.ctestwizard.model.test.entity.TObject;
+import com.ctestwizard.model.test.entity.TPassing;
+import com.ctestwizard.model.test.entity.TProject;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;

@@ -1,18 +1,24 @@
 package com.ctestwizard.controller;
 
 import com.ctestwizard.MainApplication;
-import com.ctestwizard.model.entity.CDefine;
-import com.ctestwizard.model.entity.CElement;
-import com.ctestwizard.model.entity.CFunction;
-import com.ctestwizard.model.testdriver.TDriver;
-import com.ctestwizard.model.testdriver.TProperty;
-import com.ctestwizard.model.testdriver.TResults;
-import com.ctestwizard.model.testentity.TCase;
-import com.ctestwizard.model.testentity.TObject;
-import com.ctestwizard.model.testentity.TProject;
-import com.ctestwizard.view.TableFactory;
+import com.ctestwizard.model.code.entity.CDefine;
+import com.ctestwizard.model.code.entity.CElement;
+import com.ctestwizard.model.code.entity.CFunction;
+import com.ctestwizard.model.coverage.CoverageInstrumenter;
+import com.ctestwizard.model.exception.InterfaceChangedException;
+import com.ctestwizard.model.test.driver.TDriver;
+import com.ctestwizard.model.test.driver.TProperty;
+import com.ctestwizard.model.test.driver.TResults;
+import com.ctestwizard.model.test.driver.TSummary;
+import com.ctestwizard.model.test.entity.TCase;
+import com.ctestwizard.model.test.entity.TObject;
+import com.ctestwizard.model.test.entity.TProject;
+import com.ctestwizard.view.entity.TCaseTable;
+import com.ctestwizard.view.entity.TObjectTable;
+import com.ctestwizard.view.table.TableFactory;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,10 +28,11 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,10 +46,6 @@ public class MainController{
     private Stage parentStage;
     @FXML
     private TabPane MainPane;
-    @FXML
-    private ListView<TObject> TestObjectList;
-    @FXML
-    private ListView<TCase> TestCaseList;
     @FXML
     private VBox InterfaceBox;
     @FXML
@@ -85,43 +88,96 @@ public class MainController{
     private Label TestCaseDescriptionLabel;
     @FXML
     private TextArea TestCaseDescription;
+    @FXML
+    private TableView<TObjectTable> TestObjectTable;
+    @FXML
+    private TableColumn<TObjectTable, String> TestObjectColumn;
+    @FXML
+    private TableColumn<TObjectTable, Image> TestObjectRsColumn;
+    @FXML
+    private TableColumn<TObjectTable, Image> TestObjectCovColumn;
+    @FXML
+    private TableView<TCaseTable> TestCaseTable;
+    @FXML
+    private TableColumn<TCaseTable, String> TestCaseIdColumn;
+    @FXML
+    private TableColumn<TCaseTable, String> TestCaseTitleColumn;
+    @FXML
+    private TableColumn<TCaseTable, Image> TestCaseRsColumn;
+
     public void setup(TProject project, Stage parentStage){
         this.project = project;
         this.parentStage = parentStage;
     }
     public void init(){
-        TestObjectList.getItems().clear();
-        TestObjectList.setCellFactory(param -> new ListCell<>(){
+        TestObjectTable.getItems().clear();
+        TestObjectColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getTestObject().getTestFunction().getName()));
+        TestObjectColumn.setPrefWidth(TableView.USE_COMPUTED_SIZE);
+        TestObjectColumn.setMinWidth(150);
+        TestObjectRsColumn.setPrefWidth(30);
+        TestObjectRsColumn.setResizable(false);
+        TestObjectRsColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().getResultImage()));
+        TestObjectRsColumn.setCellFactory(param -> new TableCell<>(){
             @Override
-            protected void updateItem(TObject item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null || item.getTestFunction() == null) {
-                    setText(null);
-                } else {
-                    setText(item.getTestFunction().getName());
-                }
-            }
-
-        });
-        TestCaseList.getItems().clear();
-        TestCaseList.setCellFactory(param -> new ListCell<>(){
-            @Override
-            protected void updateItem(TCase item, boolean empty) {
+            protected void updateItem(Image item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
-                    setText(null);
+                    setGraphic(null);
                 } else {
-                    setText(String.valueOf(item.getId()));
+                    ImageView imageView = new ImageView(item);
+                    imageView.setFitHeight(16);
+                    imageView.setFitWidth(16);
+                    setGraphic(imageView);
                 }
             }
-
         });
-        project.getTestObjects().forEach(testObject -> TestObjectList.getItems().add(testObject));
+        TestObjectCovColumn.setPrefWidth(30);
+        TestObjectCovColumn.setResizable(false);
+        TestObjectCovColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().getCoverageImage()));
+        TestObjectCovColumn.setCellFactory(param -> new TableCell<>(){
+            @Override
+            protected void updateItem(Image item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    ImageView imageView = new ImageView(item);
+                    imageView.setFitHeight(16);
+                    imageView.setFitWidth(16);
+                    setGraphic(imageView);
+                }
+            }
+        });
+        project.getTestObjects().forEach(testObject -> TestObjectTable.getItems().add(new TObjectTable(testObject)));
+
+        TestCaseTable.getItems().clear();
+        TestCaseIdColumn.setCellValueFactory(param -> new SimpleStringProperty(String.valueOf(param.getValue().getTestCase().getId())));
+        TestCaseIdColumn.setPrefWidth(50);
+        TestCaseTitleColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getTestCase().getTitle()));
+        TestCaseTitleColumn.setPrefWidth(150);
+        TestCaseRsColumn.setResizable(false);
+
+        TestCaseRsColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().getResultImage()));
+        TestCaseRsColumn.setCellFactory(param -> new TableCell<>(){
+            @Override
+            protected void updateItem(Image item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    ImageView imageView = new ImageView(item);
+                    imageView.setFitHeight(16);
+                    imageView.setFitWidth(16);
+                    setGraphic(imageView);
+                }
+            }
+        });
+        TestCaseRsColumn.setPrefWidth(30);
         startMemoryMonitoring();
 
         MainPane.getSelectionModel().selectedItemProperty().addListener((observable,oldTab,newTab) -> {
             if(newTab.getText().equals("Data Editor") && oldTab.getText().equals("Interface Editor")){
-                if(TestCaseList.getSelectionModel().getSelectedItem() != null){
+                if(TestCaseTable.getSelectionModel().getSelectedItem() != null){
                     handleTCaseClick();
                 }
             }
@@ -138,8 +194,12 @@ public class MainController{
     }
     @FXML
     public void handleTObjectClick(){
-        TObject selectedObject = TestObjectList.getSelectionModel().getSelectedItem();
-
+        MainPane.getSelectionModel().select(0);
+        TObjectTable selectedTable = TestObjectTable.getSelectionModel().getSelectedItem();
+        if(selectedTable == null){
+            return;
+        }
+        TObject selectedObject = selectedTable.getTestObject();
         if(selectedObject == null){
             return;
         }
@@ -159,8 +219,8 @@ public class MainController{
         InterfaceBox.getChildren().add(TableFactory.createUserGlobalsTable(selectedObject.getTestInterface()));
 
         //Add the test cases to the test case list
-        TestCaseList.getItems().clear();
-        selectedObject.getTestCases().forEach(testCase -> TestCaseList.getItems().add(testCase));
+        TestCaseTable.getItems().clear();
+        selectedObject.getTestCases().forEach(testCase -> TestCaseTable.getItems().add(new TCaseTable(testCase)));
 
         //Add the stub functions
         StubCodeList.getItems().clear();
@@ -188,9 +248,13 @@ public class MainController{
 
     @FXML
     public void handleTCaseClick(){
+        TCaseTable selectedTable = TestCaseTable.getSelectionModel().getSelectedItem();
+        if(selectedTable == null){
+            return;
+        }
         //Add the test data to the test data box
         TestDataBox.getChildren().clear();
-        TCase selectedCase = TestCaseList.getSelectionModel().getSelectedItem();
+        TCase selectedCase = selectedTable.getTestCase();
         if(selectedCase == null){
             return;
         }
@@ -209,16 +273,25 @@ public class MainController{
 
     @FXML
     public void changeTitle(){
-        TCase selectedCase = TestCaseList.getSelectionModel().getSelectedItem();
+        TCaseTable selectedTable = TestCaseTable.getSelectionModel().getSelectedItem();
+        if(selectedTable == null){
+            return;
+        }
+        TCase selectedCase = selectedTable.getTestCase();
         if(selectedCase == null){
             return;
         }
         selectedCase.setTitle(TestCaseTitle.getText());
+        TestCaseTable.refresh();
     }
 
     @FXML
     public void changeDescription(){
-        TCase selectedCase = TestCaseList.getSelectionModel().getSelectedItem();
+        TCaseTable selectedTable = TestCaseTable.getSelectionModel().getSelectedItem();
+        if(selectedTable == null){
+            return;
+        }
+        TCase selectedCase = selectedTable.getTestCase();
         if(selectedCase == null){
             return;
         }
@@ -227,26 +300,35 @@ public class MainController{
 
     @FXML
     public void handleCreateNewTestCase(){
+        TObjectTable selectedTable = TestObjectTable.getSelectionModel().getSelectedItem();
+        if(selectedTable == null){
+            return;
+        }
         //Create a new test case in memory
-        TObject selectedObject = TestObjectList.getSelectionModel().getSelectedItem();
+        TObject selectedObject = TestObjectTable.getSelectionModel().getSelectedItem().getTestObject();
         if(selectedObject == null){
             return;
         }
         TCase newCase = TCase.newTestCase(selectedObject);
         selectedObject.getTestCases().add(newCase);
-        TestCaseList.getItems().add(newCase);
+        TestCaseTable.getItems().add(new TCaseTable(newCase));
     }
 
     @FXML
-    public void handleExecuteTestObject(){
+    public void handleExecuteTestObject() {
         try{
-            TObject selectedTestObject = TestObjectList.getSelectionModel().getSelectedItem();
+            TObjectTable selectedTable = TestObjectTable.getSelectionModel().getSelectedItem();
+            if(selectedTable == null){
+                throw new Exception("No Test Object Selected");
+            }
+            TObject selectedTestObject = TestObjectTable.getSelectionModel().getSelectedItem().getTestObject();
             if(selectedTestObject == null){
                 throw new Exception("No Test Object Selected");
             }
+
             TDriver testDriver = selectedTestObject.getParent().getTestDriver();
             Console.appendText("-----Executing "+selectedTestObject.getTestFunction().getName()+"-----\n");
-            List<TResults> testResults = testDriver.executeTestObject(selectedTestObject,(p)->{
+            TSummary testSummary = testDriver.executeTestObject(selectedTestObject,true,(p)->{
                 // Redirect process output to UI
                 new Thread(() -> {
                     try{
@@ -275,13 +357,36 @@ public class MainController{
                     }
                 }).start();
             });
+
             Console.appendText("-----Finished Test Object Execution Successfully-----\n");
             Console.appendText("-----Comparing Test Results-----\n");
-            selectedTestObject.compareTestResults(testResults);
+            selectedTestObject.compareTestResults(testSummary.getTestResults());
             Console.appendText("-----Finished Comparing Test Results-----\n");
+            if(testSummary.getResultsPassed()){
+                TestObjectTable.getSelectionModel().getSelectedItem().setRsStatus(1);
+            }else{
+                TestObjectTable.getSelectionModel().getSelectedItem().setRsStatus(0);
+            }
+            if(testSummary.getCoveragePassed() == 1){
+                TestObjectTable.getSelectionModel().getSelectedItem().setCovStatus(1);
+            }else{
+                TestObjectTable.getSelectionModel().getSelectedItem().setCovStatus(0);
+            }
+            TestObjectTable.refresh();
+            List<TResults> testResults = testSummary.getTestResults();
+            for(int i = 0; i < testResults.size(); i++){
+                TCaseTable testCaseTable = TestCaseTable.getItems().get(i);
+                TResults testResult = testResults.get(i);
+                testCaseTable.setResultStatus(testResult.getResultsPassed() ? 1 : 0);
+            }
+            TestCaseTable.refresh();
             //Update the test data in the UI
             handleTCaseClick();
         }catch(Exception e){
+            if(e instanceof InterfaceChangedException){
+                //Force open the interface editor tab
+                handleTObjectClick();
+            }
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText(e.getMessage());
@@ -291,7 +396,11 @@ public class MainController{
 
     @FXML
     public void handleNewTestStep(){
-        TCase selectedCase = TestCaseList.getSelectionModel().getSelectedItem();
+        TCaseTable selectedTable = TestCaseTable.getSelectionModel().getSelectedItem();
+        if(selectedTable == null){
+            return;
+        }
+        TCase selectedCase = selectedTable.getTestCase();
         if(selectedCase == null){
             return;
         }
@@ -308,7 +417,11 @@ public class MainController{
 
     @FXML
     public void handleNewUserGlobal() throws IOException{
-        TObject selectedObject = TestObjectList.getSelectionModel().getSelectedItem();
+        TObjectTable selectedTable = TestObjectTable.getSelectionModel().getSelectedItem();
+        if(selectedTable == null){
+            return;
+        }
+        TObject selectedObject = TestObjectTable.getSelectionModel().getSelectedItem().getTestObject();
         if(selectedObject == null){
             return;
         }
@@ -327,7 +440,11 @@ public class MainController{
 
     @FXML
     public void setStubBody(){
-        TObject selectedObject = TestObjectList.getSelectionModel().getSelectedItem();
+        TObjectTable selectedTable = TestObjectTable.getSelectionModel().getSelectedItem();
+        if(selectedTable == null){
+            return;
+        }
+        TObject selectedObject = TestObjectTable.getSelectionModel().getSelectedItem().getTestObject();
         if(selectedObject == null){
             return;
         }
@@ -366,7 +483,12 @@ public class MainController{
                 case "Test Header":
                     project.getTestDriver().setTestHeaderPath(property.getValue());
                     break;
-
+                case "Result Significance":
+                    project.getTestDriver().setResultSignificance(Double.parseDouble(property.getValue()));
+                    break;
+                case "Coverage Significance":
+                    project.getTestDriver().setCoverageSignificance(Double.parseDouble(property.getValue()));
+                    break;
             }
         });
     }
@@ -469,8 +591,13 @@ public class MainController{
     }
 
     @FXML
-    public void staticAnalysis(){
-        
+    public void staticAnalysis() throws Exception{
+        TObject selectedObject = TestObjectTable.getSelectionModel().getSelectedItem().getTestObject();
+        if(selectedObject == null){
+            return;
+        }
+        CoverageInstrumenter.instrumentObject(selectedObject);
+
     }
 
     public void updateDefines(CDefine define){
@@ -518,7 +645,9 @@ public class MainController{
                 new TProperty("Output Flag",project.getTestDriver().getOutputFlag()),
                 new TProperty("Source File Path",project.getTestDriver().getSourceFilePath()),
                 new TProperty("Project Path",project.getTestDriver().getProjectPath()),
-                new TProperty("Test Header",project.getTestDriver().getTestHeaderPath())
+                new TProperty("Test Header",project.getTestDriver().getTestHeaderPath()),
+                new TProperty("Result Significance",String.valueOf(project.getTestDriver().getResultSignificance())),
+                new TProperty("Coverage Significance",String.valueOf(project.getTestDriver().getCoverageSignificance()))
         );
         PropertyTable.setEditable(true);
 

@@ -1,7 +1,7 @@
 package com.ctestwizard.controller;
 
 import com.ctestwizard.MainApplication;
-import com.ctestwizard.model.testentity.TProject;
+import com.ctestwizard.model.test.entity.TProject;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -61,6 +61,7 @@ public class ProjectListController {
             stage.close();
             mainStage.show();
         } catch (Exception e) {
+            e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText("Could not open project");
