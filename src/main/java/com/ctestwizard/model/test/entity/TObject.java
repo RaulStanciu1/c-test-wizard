@@ -144,7 +144,7 @@ public class TObject implements Serializable {
         return -1;
     }
 
-    private void _updateFunctions(List<CFunction> functionDefinitions, List<CFunction> interfaceList, Map<CFunction,String>stubCodeList){
+    private void _updateFunctions(List<CFunction> functionDefinitions,CFunction testFunction, List<CFunction> interfaceList, Map<CFunction,String>stubCodeList){
         // Remove any functions that are no longer present(with their respective stub)
         Iterator<CFunction> iterator = interfaceList.iterator();
         while(iterator.hasNext()){
@@ -170,18 +170,18 @@ public class TObject implements Serializable {
                     break;
                 }
             }
-            if (!found) {
+            if (!found && !localFunction.getName().strip().equals(testFunction.getName().strip())) {
                 interfaceList.add(localFunction);
             }
         }
     }
 
     public void updateLocalFunctions(List<CFunction> localFunctionDefinitions) {
-        _updateFunctions(localFunctionDefinitions,this.testInterface.getLocalFunctions(),this.testInterface.getStubCode());
+        _updateFunctions(localFunctionDefinitions,this.getTestFunction(),this.testInterface.getLocalFunctions(),this.testInterface.getStubCode());
     }
 
     public void updateExternalFunctions(List<CFunction> externalFunctionDefinitions) {
-        _updateFunctions(externalFunctionDefinitions,this.testInterface.getExternalFunctions(),this.testInterface.getStubCode());
+        _updateFunctions(externalFunctionDefinitions,this.getTestFunction(),this.testInterface.getExternalFunctions(),this.testInterface.getStubCode());
     }
 
     public void updateGlobals(List<CElement> globals) {

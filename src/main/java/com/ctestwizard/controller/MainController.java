@@ -386,6 +386,9 @@ public class MainController{
             if(e instanceof InterfaceChangedException){
                 //Force open the interface editor tab
                 handleTObjectClick();
+                TestObjectTable.getItems().clear();
+                project.getTestObjects().forEach(testObject -> TestObjectTable.getItems().add(new TObjectTable(testObject)));
+                TestObjectTable.refresh();
             }
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");

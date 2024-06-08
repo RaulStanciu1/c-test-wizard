@@ -1,6 +1,7 @@
 package com.ctestwizard.model.test.driver;
 
 
+import com.ctestwizard.model.code.entity.CFunction;
 import com.ctestwizard.model.code.parser.CParserDetector;
 import com.ctestwizard.model.code.entity.CDefine;
 import com.ctestwizard.model.coverage.CoverageInstrumenter;
@@ -105,6 +106,7 @@ public class TDriver implements Serializable {
             }
         }
         if(!FileUtils.contentEquals(sourceFile,sourceFileCopy)){
+            FileUtils.copyFile(sourceFile,sourceFileCopy);
             //Preprocess the source file copy and save it
             ProcessBuilder processBuilder = new ProcessBuilder(compiler.getCompiler());
             processBuilder.command().add(compiler.getPreprocessFlag());
@@ -169,6 +171,37 @@ public class TDriver implements Serializable {
                 interfaceChanged = 1;
             }
 
+        }
+
+        //Remove test objects not present in the source file anymore
+        for(TObject testObject : _parent.getTestObjects()){
+            boolean found = false;
+            for(CFunction localFunction : parser.getLocalFunctionDefinitions()){
+                if(testObject.getTestFunction().getName().strip().equals(localFunction.getName().strip())){
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
+                _parent.getTestObjects().remove(testObject);
+                interfaceChanged = 1;
+            }
+        }
+
+        //Add any new test objects present in the source file
+        for(CFunction localFunction : parser.getLocalFunctionDefinitions()){
+            boolean found = false;
+            for(TObject testObject : _parent.getTestObjects()){
+                if(testObject.getTestFunction().getName().strip().equals(localFunction.getName().strip())){
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
+                TObject newTestObject = TObject.newTObject(_parent,parser,localFunction);
+                _parent.getTestObjects().add(newTestObject);
+                interfaceChanged = 1;
+            }
         }
 
         return interfaceChanged;
