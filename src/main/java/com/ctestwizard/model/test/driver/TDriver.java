@@ -25,6 +25,8 @@ public class TDriver implements Serializable {
     private final List<CDefine> defines;
     private Double coverageSignificance; /* Percentage that decides when code coverage is considered passed */
     private Double resultSignificance; /* Percentage that decides when test results are considered passed */
+    private boolean coverageEnabled;
+    private boolean reportEnabled;
     public TDriver(TProject parent,String sourceFilePath, String projectPath, TCompiler compiler){
         this._parent = parent;
         this.sourceFilePath = sourceFilePath;
@@ -36,6 +38,7 @@ public class TDriver implements Serializable {
         this.defines.add(new CDefine("volatile",""));
         this.coverageSignificance = 80.0;
         this.resultSignificance = 100.0;
+        this.coverageEnabled = false;
     }
 
     /**
@@ -207,7 +210,7 @@ public class TDriver implements Serializable {
         return interfaceChanged;
     }
 
-    public TSummary executeTestObject(TObject testObject,boolean coverageEnabled,ConsoleWriter consoleWriter) throws Exception {
+    public TSummary executeTestObject(TObject testObject,ConsoleWriter consoleWriter) throws Exception {
         if(!coverageEnabled){
             return executeNoCoverage(testObject,consoleWriter);
         }else{
@@ -379,5 +382,21 @@ public class TDriver implements Serializable {
 
     public void setResultSignificance(Double resultSignificance) {
         this.resultSignificance = resultSignificance;
+    }
+
+    public boolean isCoverageEnabled() {
+        return coverageEnabled;
+    }
+
+    public void setCoverageEnabled(boolean coverageEnabled) {
+        this.coverageEnabled = coverageEnabled;
+    }
+
+    public boolean isReportEnabled() {
+        return reportEnabled;
+    }
+
+    public void setReportEnabled(boolean reportEnabled) {
+        this.reportEnabled = reportEnabled;
     }
 }

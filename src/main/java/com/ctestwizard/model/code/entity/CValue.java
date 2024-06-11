@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class CValue implements Cloneable, Serializable {
     public String value;
-    public Integer valueStatus; /* -1 = no status 0 = failed 1 = passed */
+    public transient Integer valueStatus; /* 0 = no status -1 = failed 1 = passed */
     public CValue(String value, int valueStatus){
         this.value = value;
         this.valueStatus = valueStatus;

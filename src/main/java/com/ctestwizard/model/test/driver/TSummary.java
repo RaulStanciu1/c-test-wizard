@@ -85,9 +85,9 @@ public class TSummary {
 
     private boolean elementPassed(CElement element, int testStep){
         if(element instanceof CVariable variable){
-            return variable.values.get(testStep).valueStatus != 0;
+            return variable.values.get(testStep).valueStatus != -1;
         }else if(element instanceof CEnumInstance enumInstance) {
-            return enumInstance.values.get(testStep).valueStatus != 0;
+            return enumInstance.values.get(testStep).valueStatus != -1;
         }else if(element instanceof CStructOrUnionInstance structOrUnionInstance) {
             if(structOrUnionInstance.getPointers() ==0){
                 for(CElement structElement : structOrUnionInstance.getStructType().getMembers()){
@@ -96,7 +96,7 @@ public class TSummary {
                     }
                 }
             }else{
-                return structOrUnionInstance.values.get(testStep).valueStatus != 0;
+                return structOrUnionInstance.values.get(testStep).valueStatus != -1;
             }
         }else if(element instanceof CArray array){
             for(CElement arrayElement : array.getArrayMembers()){

@@ -242,6 +242,9 @@ public class UserGlobalFormController {
     }
 
     private void checkTypeValidity(){
+        if(TypeTreeView.getSelectionModel().getSelectedItem() == null){
+            throw new IllegalArgumentException("Please select a type");
+        }
         String selectedType = TypeTreeView.getSelectionModel().getSelectedItem().getValue();
         if(selectedType == null){
             throw new IllegalArgumentException("Please select a type");

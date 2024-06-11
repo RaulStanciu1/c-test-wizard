@@ -6,10 +6,7 @@ import com.ctestwizard.model.code.entity.CElement;
 import com.ctestwizard.model.code.entity.CFunction;
 import com.ctestwizard.model.coverage.CoverageInstrumenter;
 import com.ctestwizard.model.exception.InterfaceChangedException;
-import com.ctestwizard.model.test.driver.TDriver;
-import com.ctestwizard.model.test.driver.TProperty;
-import com.ctestwizard.model.test.driver.TResults;
-import com.ctestwizard.model.test.driver.TSummary;
+import com.ctestwizard.model.test.driver.*;
 import com.ctestwizard.model.test.entity.TCase;
 import com.ctestwizard.model.test.entity.TObject;
 import com.ctestwizard.model.test.entity.TProject;
@@ -72,14 +69,6 @@ public class MainController{
     private Label StubFunctionBodyLabel;
     @FXML
     private TextArea StubFunctionBody;
-    @FXML
-    private TableView<TProperty> PropertyTable;
-    @FXML
-    private ListView<CDefine> DefinesList;
-    @FXML
-    private ListView<String> LinkerList;
-    @FXML
-    private ListView<String> IncludeList;
     @FXML
     private Label TestCaseTitleLabel;
     @FXML
@@ -186,14 +175,26 @@ public class MainController{
         ExecuteTestObjectBtn.setDisable(true);
         NewTestCaseBtn.setDisable(true);
         NewTestStepBtn.setDisable(true);
-
-        setupPropertyTable();
-        setupDefinesList();
-        setupLinkerList();
-        setupIncludeList();
+    }
+    @FXML
+    public void handleTestExecutionSettingsClick() throws IOException {
+        Stage formStage = new Stage();
+        formStage.initModality(Modality.APPLICATION_MODAL);
+        formStage.initOwner(parentStage);
+        FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource("test-execution-settings-view.fxml"));
+        Parent root = loader.load();
+        TestExecutionSettingsController controller = loader.getController();
+        controller.setup(project,formStage);
+        controller.init();
+        formStage.setScene(new Scene(root));
+        formStage.setResizable(false);
+        formStage.show();
     }
     @FXML
     public void handleTObjectClick(){
+        MainPane.getTabs().get(0).setDisable(false);
+        MainPane.getTabs().get(1).setDisable(false);
+        MainPane.getTabs().get(2).setDisable(true);
         MainPane.getSelectionModel().select(0);
         TObjectTable selectedTable = TestObjectTable.getSelectionModel().getSelectedItem();
         if(selectedTable == null){
@@ -248,6 +249,10 @@ public class MainController{
 
     @FXML
     public void handleTCaseClick(){
+        MainPane.getTabs().get(0).setDisable(true);
+        MainPane.getTabs().get(1).setDisable(true);
+        MainPane.getTabs().get(2).setDisable(false);
+        MainPane.getSelectionModel().select(2);
         TCaseTable selectedTable = TestCaseTable.getSelectionModel().getSelectedItem();
         if(selectedTable == null){
             return;
@@ -317,6 +322,7 @@ public class MainController{
     @FXML
     public void handleExecuteTestObject() {
         try{
+            Console.setText("");
             TObjectTable selectedTable = TestObjectTable.getSelectionModel().getSelectedItem();
             if(selectedTable == null){
                 throw new Exception("No Test Object Selected");
@@ -328,7 +334,7 @@ public class MainController{
 
             TDriver testDriver = selectedTestObject.getParent().getTestDriver();
             Console.appendText("-----Executing "+selectedTestObject.getTestFunction().getName()+"-----\n");
-            TSummary testSummary = testDriver.executeTestObject(selectedTestObject,true,(p)->{
+            TSummary testSummary = testDriver.executeTestObject(selectedTestObject,(p)->{
                 // Redirect process output to UI
                 new Thread(() -> {
                     try{
@@ -369,8 +375,10 @@ public class MainController{
             }
             if(testSummary.getCoveragePassed() == 1){
                 TestObjectTable.getSelectionModel().getSelectedItem().setCovStatus(1);
-            }else{
+            }else if(testSummary.getCoveragePassed() == 0){
                 TestObjectTable.getSelectionModel().getSelectedItem().setCovStatus(0);
+            }else{
+                TestObjectTable.getSelectionModel().getSelectedItem().setCovStatus(-1);
             }
             TestObjectTable.refresh();
             List<TResults> testResults = testSummary.getTestResults();
@@ -382,6 +390,19 @@ public class MainController{
             TestCaseTable.refresh();
             //Update the test data in the UI
             handleTCaseClick();
+            //Print the summary to the console
+            Console.appendText("-----Test Summary-----\n");
+            Console.appendText("Test Execution Status :"+(testSummary.getResultsPassed() ? "PASSED" : "FAILED")+"\n");
+            if(testSummary.getCoveragePassed() != -1){
+                Console.appendText("Coverage Status :"+(testSummary.getCoveragePassed() == 1 ? "PASSED" : "FAILED")+"\n");
+            }
+            Console.appendText("Total Test Cases :"+testSummary.getTotalTestCases()+"\n");
+            Console.appendText("Total Test Steps :"+testSummary.getTotalTestSteps()+"\n");
+            Console.appendText("Passed Test Steps :"+testSummary.getPassedTestSteps()+"\n");
+            Console.appendText("-----End of Test Summary-----\n");
+            if(project.getTestDriver().isReportEnabled()){
+                ReportGenerator.generateReport(project,selectedTestObject,testSummary);
+            }
         }catch(Exception e){
             if(e instanceof InterfaceChangedException){
                 //Force open the interface editor tab
@@ -459,119 +480,6 @@ public class MainController{
     }
 
     @FXML
-    public void commitPropertyChanges(){
-        PropertyTable.getItems().forEach(property -> {
-            switch(property.getProperty()){
-                case "Project Name":
-                    project.setName(property.getValue());
-                    break;
-                case "Compiler":
-                    project.getTestDriver().setCompiler(property.getValue());
-                    break;
-                case "Preprocess Flag":
-                    project.getTestDriver().setPreprocessFlag(property.getValue());
-                    break;
-                case "Compile Flag":
-                    project.getTestDriver().setCompileFlag(property.getValue());
-                    break;
-                case "Output Flag":
-                    project.getTestDriver().setOutputFlag(property.getValue());
-                    break;
-                case "Source File Path":
-                    project.getTestDriver().setSourceFilePath(property.getValue());
-                    break;
-                case "Project Path":
-                    project.getTestDriver().setProjectPath(property.getValue());
-                    break;
-                case "Test Header":
-                    project.getTestDriver().setTestHeaderPath(property.getValue());
-                    break;
-                case "Result Significance":
-                    project.getTestDriver().setResultSignificance(Double.parseDouble(property.getValue()));
-                    break;
-                case "Coverage Significance":
-                    project.getTestDriver().setCoverageSignificance(Double.parseDouble(property.getValue()));
-                    break;
-            }
-        });
-    }
-
-    @FXML
-    public void createDefine(){
-        FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource("create-define-view.fxml"));
-        Stage formStage = new Stage();
-        formStage.initModality(Modality.APPLICATION_MODAL);
-        formStage.initOwner(parentStage);
-        try {
-            Parent root = loader.load();
-            CreateDefineController controller = loader.getController();
-            controller.setup(this,formStage);
-            formStage.setScene(new Scene(root));
-            formStage.setResizable(false);
-            formStage.show();
-        } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText(e.getMessage());
-            alert.showAndWait();
-        }
-    }
-
-    @FXML
-    public void removeSelectedDefine(){
-        CDefine selectedDefine = DefinesList.getSelectionModel().getSelectedItem();
-        if(selectedDefine == null){
-            return;
-        }
-        project.getTestDriver().getDefines().remove(selectedDefine);
-        DefinesList.getItems().remove(selectedDefine);
-    }
-
-    @FXML
-    public void addLinker(){
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Add Linker");
-        dialog.setHeaderText("Enter the Linker File");
-        dialog.setContentText("Linker:");
-        dialog.showAndWait().ifPresent(linker -> {
-            project.getTestDriver().getLinker().add(linker);
-            LinkerList.getItems().add(linker);
-        });
-    }
-
-    @FXML
-    public void removeSelectedLinker(){
-        String selectedLinker = LinkerList.getSelectionModel().getSelectedItem();
-        if(selectedLinker == null){
-            return;
-        }
-        project.getTestDriver().getLinker().remove(selectedLinker);
-        LinkerList.getItems().remove(selectedLinker);
-    }
-
-    @FXML
-    public void addIncludeDirectory(){
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Add Include Directory");
-        dialog.setHeaderText("Enter the Include Directory");
-        dialog.setContentText("Include Directory:");
-        dialog.showAndWait().ifPresent(directory -> {
-            project.getTestDriver().getIncludeDirectories().add(directory);
-            IncludeList.getItems().add(directory);
-        });
-    }
-
-    @FXML
-    public void removeSelectedDirectory(){
-        String selectedDirectory = IncludeList.getSelectionModel().getSelectedItem();
-        if(selectedDirectory == null){
-            return;
-        }
-        project.getTestDriver().getIncludeDirectories().remove(selectedDirectory);
-        IncludeList.getItems().remove(selectedDirectory);
-    }
-
-    @FXML
     public void saveProject(){
         try{
             TProject.archiveProject(project);
@@ -603,10 +511,7 @@ public class MainController{
 
     }
 
-    public void updateDefines(CDefine define){
-        project.getTestDriver().getDefines().add(define);
-        DefinesList.getItems().add(define);
-    }
+
 
     public void addEntryToUserGlobalsTable(CElement entry){
         TableView<CElement> userGlobalsTable = (TableView<CElement>) InterfaceBox.getChildren().get(3);
@@ -624,52 +529,5 @@ public class MainController{
             }
         };
         timer.start();
-    }
-
-    private void setupPropertyTable(){
-        PropertyTable.getColumns().clear();
-        PropertyTable.getItems().clear();
-        TableColumn<TProperty,String> propertyColumn = new TableColumn<>("Property");
-        propertyColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getProperty()));
-        TableColumn<TProperty,String> valueColumn = new TableColumn<>("Value");
-        valueColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getValue()));
-        valueColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        valueColumn.setOnEditCommit(event -> {
-            TProperty property = event.getRowValue();
-            property.setValue(event.getNewValue());
-        });
-        PropertyTable.getColumns().add(propertyColumn);
-        PropertyTable.getColumns().add(valueColumn);
-        ObservableList<TProperty> tableData = FXCollections.observableArrayList(
-                new TProperty("Project Name",project.getName()),
-                new TProperty("Compiler",project.getTestDriver().getCompiler()),
-                new TProperty("Preprocess Flag",project.getTestDriver().getPreprocessFlag()),
-                new TProperty("Compile Flag",project.getTestDriver().getCompileFlag()),
-                new TProperty("Output Flag",project.getTestDriver().getOutputFlag()),
-                new TProperty("Source File Path",project.getTestDriver().getSourceFilePath()),
-                new TProperty("Project Path",project.getTestDriver().getProjectPath()),
-                new TProperty("Test Header",project.getTestDriver().getTestHeaderPath()),
-                new TProperty("Result Significance",String.valueOf(project.getTestDriver().getResultSignificance())),
-                new TProperty("Coverage Significance",String.valueOf(project.getTestDriver().getCoverageSignificance()))
-        );
-        PropertyTable.setEditable(true);
-
-        PropertyTable.setItems(tableData);
-
-    }
-
-    private void setupDefinesList(){
-        DefinesList.getItems().clear();
-        project.getTestDriver().getDefines().forEach(define -> DefinesList.getItems().add(define));
-    }
-
-    private void setupLinkerList(){
-        LinkerList.getItems().clear();
-        project.getTestDriver().getLinker().forEach(linker -> LinkerList.getItems().add(linker));
-    }
-
-    private void setupIncludeList(){
-        IncludeList.getItems().clear();
-        project.getTestDriver().getIncludeDirectories().forEach(include -> IncludeList.getItems().add(include));
     }
 }

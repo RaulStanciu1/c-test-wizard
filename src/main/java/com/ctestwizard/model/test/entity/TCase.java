@@ -64,15 +64,15 @@ public class TCase implements Serializable {
         // Add a new test step to the test case(creating a new element in every values list of each CElement)
         for(CElement parameter : parameters){
             if(parameter instanceof CVariable variable){
-                variable.values.add(new CValue("",-1));
+                variable.values.add(new CValue("",0));
             }else if(parameter instanceof CEnumInstance enumInstance){
-                enumInstance.values.add(new CValue("",-1));
+                enumInstance.values.add(new CValue("",0));
             }else if(parameter instanceof CStructOrUnionInstance structOrUnionInstance){
                 // It's a pointer to a struct
                 if(structOrUnionInstance.getPointers() != 0){
-                    structOrUnionInstance.values.add(new CValue("",-1));
+                    structOrUnionInstance.values.add(new CValue("",0));
                 }else{
-                    structOrUnionInstance.values.add(new CValue("",-1));
+                    structOrUnionInstance.values.add(new CValue("",0));
                     //Go recursively through the struct members and add a new value for each member
                     _newTStepStructOrUnion(structOrUnionInstance);
                 }
@@ -83,15 +83,15 @@ public class TCase implements Serializable {
         }
         for(CElement inputGlobal : inputGlobals){
             if(inputGlobal instanceof CVariable variable){
-                variable.values.add(new CValue("",-1));
+                variable.values.add(new CValue("",0));
             }else if(inputGlobal instanceof CEnumInstance enumInstance){
-                enumInstance.values.add(new CValue("",-1));
+                enumInstance.values.add(new CValue("",0));
             }else if(inputGlobal instanceof CStructOrUnionInstance structOrUnionInstance){
                 // It's a pointer to a struct
                 if(structOrUnionInstance.getPointers() != 0){
-                    structOrUnionInstance.values.add(new CValue("",-1));
+                    structOrUnionInstance.values.add(new CValue("",0));
                 }else{
-                    structOrUnionInstance.values.add(new CValue("",-1));
+                    structOrUnionInstance.values.add(new CValue("",0));
                     //Go recursively through the struct members and add a new value for each member
                     _newTStepStructOrUnion(structOrUnionInstance);
                 }
@@ -102,15 +102,15 @@ public class TCase implements Serializable {
         }
         for(CElement outputGlobal : outputGlobals){
             if(outputGlobal instanceof CVariable variable){
-                variable.values.add(new CValue("",-1));
+                variable.values.add(new CValue("",0));
             }else if(outputGlobal instanceof CEnumInstance enumInstance){
-                enumInstance.values.add(new CValue("",-1));
+                enumInstance.values.add(new CValue("",0));
             }else if(outputGlobal instanceof CStructOrUnionInstance structOrUnionInstance){
                 // It's a pointer to a struct
                 if(structOrUnionInstance.getPointers() != 0){
-                    structOrUnionInstance.values.add(new CValue("",-1));
+                    structOrUnionInstance.values.add(new CValue("",0));
                 }else{
-                    structOrUnionInstance.values.add(new CValue("",-1));
+                    structOrUnionInstance.values.add(new CValue("",0));
                     //Go recursively through the struct members and add a new value for each member
                     _newTStepStructOrUnion(structOrUnionInstance);
                 }
@@ -120,15 +120,15 @@ public class TCase implements Serializable {
             }
         }
         if(output instanceof CVariable variable) {
-            variable.values.add(new CValue("",-1));
+            variable.values.add(new CValue("",0));
         }else if(output instanceof CEnumInstance enumInstance) {
-            enumInstance.values.add(new CValue("",-1));
+            enumInstance.values.add(new CValue("",0));
         }else if(output instanceof CStructOrUnionInstance structOrUnionInstance) {
             // It's a pointer to a struct
             if (structOrUnionInstance.getPointers() != 0) {
-                structOrUnionInstance.values.add(new CValue("",-1));
+                structOrUnionInstance.values.add(new CValue("",0));
             } else {
-                structOrUnionInstance.values.add(new CValue("",-1));
+                structOrUnionInstance.values.add(new CValue("",0));
                 //Go recursively through the struct members and add a new value for each member
                 _newTStepStructOrUnion(structOrUnionInstance);
             }
@@ -246,14 +246,14 @@ public class TCase implements Serializable {
             if(member instanceof CArray array){
                 _newTStepArray(array);
             } else if(member instanceof CVariable variable){
-                variable.values.add(new CValue("",-1));
+                variable.values.add(new CValue("",0));
             }else if(member instanceof CEnumInstance enumInstance){
-                enumInstance.values.add(new CValue("",-1));
+                enumInstance.values.add(new CValue("",0));
             }else if(member instanceof CStructOrUnionInstance structOrUnionInstance){
                 if (structOrUnionInstance.getPointers() != 0) {
-                    structOrUnionInstance.values.add(new CValue("",-1));
+                    structOrUnionInstance.values.add(new CValue("",0));
                 } else {
-                    structOrUnionInstance.values.add(new CValue("",-1));
+                    structOrUnionInstance.values.add(new CValue("",0));
                     //Go recursively through the struct members and add a new value for each member
                     _newTStepStructOrUnion(structOrUnionInstance);
                 }
@@ -266,14 +266,14 @@ public class TCase implements Serializable {
             if(member instanceof CArray arrayMember){
                 _newTStepArray(arrayMember);
             } else if(member instanceof CVariable variable){
-                variable.values.add(new CValue("",-1));
+                variable.values.add(new CValue("",0));
             }else if(member instanceof CEnumInstance enumInstance){
-                enumInstance.values.add(new CValue("",-1));
+                enumInstance.values.add(new CValue("",0));
             }else if(member instanceof CStructOrUnionInstance structOrUnionInstance){
                 if (structOrUnionInstance.getPointers() != 0) {
-                    structOrUnionInstance.values.add(new CValue("",-1));
+                    structOrUnionInstance.values.add(new CValue("",0));
                 } else {
-                    structOrUnionInstance.values.add(new CValue("",-1));
+                    structOrUnionInstance.values.add(new CValue("",0));
                     //Go recursively through the struct members and add a new value for each member
                     _newTStepStructOrUnion(structOrUnionInstance);
                 }
@@ -284,7 +284,7 @@ public class TCase implements Serializable {
     private List<CValue> nEmptyList(int n){
         List<CValue> emptyList = new ArrayList<>();
         for(int i = 0; i < n; i++){
-            emptyList.add(new CValue("",-1));
+            emptyList.add(new CValue("",0));
         }
         return emptyList;
     }

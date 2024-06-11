@@ -9,10 +9,12 @@ public class TResults implements Serializable {
     private final CElement output;
     private final List<CElement> globalOutputs;
     private Boolean resultsPassed;
-    public TResults(CElement output, List<CElement> globalOutputs){
+    private Integer testSteps;
+    public TResults(CElement output, List<CElement> globalOutputs, Integer testSteps){
         this.output = output;
         this.globalOutputs = globalOutputs;
         resultsPassed = false;
+        this.testSteps = testSteps;
     }
 
     public CElement getOutput() {
@@ -28,5 +30,9 @@ public class TResults implements Serializable {
     }
     public void setResultsPassed(Boolean resultsPassed) {
         this.resultsPassed = resultsPassed;
+    }
+
+    public Integer getTestSteps() {
+        return testSteps;
     }
 }

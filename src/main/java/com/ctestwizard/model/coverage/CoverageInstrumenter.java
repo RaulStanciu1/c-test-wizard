@@ -75,8 +75,11 @@ public class CoverageInstrumenter {
                 #define __CTW__U8__ unsigned char
                 #endif
                 
-                
+                #if __CTW__DECISIONS_SIZE__ == 0
+                __CTW__U8__ __ctw__decisions__arr[0];
+                #else
                 __CTW__U8__ __ctw__decisions__arr[__CTW__DECISIONS_SIZE__] = {0};
+                #endif
                 
                 #ifndef __CTW__DECISION__
                 #define __CTW__DECISION__(id) __ctw__decisions__arr[id] = 1
@@ -86,7 +89,7 @@ public class CoverageInstrumenter {
                 #define __CTW__GET__DECISION__(id) (__ctw__decisions__arr[id])
                 #endif
                 
-                double __ctw__coverage__percentage__()
+                double __ctw__coverage__percentage__(void)
                 {
                     int i;
                     int percentage = 0;
@@ -94,11 +97,11 @@ public class CoverageInstrumenter {
                     {
                         percentage += __CTW__GET__DECISION__(i);
                     }
-                    if(__CTW__DECISIONS_SIZE__ == 0)
-                    {
-                        return 1.0;
-                    }
+                    #if __CTW__DECISIONS_SIZE__ == 0
+                    return 1.0f;
+                    #else
                     return (double)percentage / __CTW__DECISIONS_SIZE__;
+                    #endif
                 }
                 """ ;
         FileUtils.write(coverageLibrary, coverageLibraryContent, "UTF-8");

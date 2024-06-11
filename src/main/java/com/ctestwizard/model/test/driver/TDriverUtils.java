@@ -294,7 +294,7 @@ public class TDriverUtils {
             for (CElement global : testCase.getOutputGlobals()) {
                 outputGlobals.add(global.clone());
             }
-            TResults result = new TResults(output, outputGlobals);
+            TResults result = new TResults(output, outputGlobals, testCase.getTSteps());
             results.add(result);
         }
 
@@ -333,9 +333,9 @@ public class TDriverUtils {
 
     private static void __handleElement(CElement element,int step, String elementName, String elementValue, boolean match) throws Exception{
         if (element instanceof CVariable var) {
-            var.values.set(step, new CValue(elementValue,match ? 1 : 0));
+            var.values.set(step, new CValue(elementValue,match ? 1 : -1));
         } else if (element instanceof CEnumInstance enumInstance) {
-            enumInstance.values.set(step, new CValue(elementValue,match ? 1 : 0));
+            enumInstance.values.set(step, new CValue(elementValue,match ? 1 : -1));
         } else if (element instanceof CStructOrUnionInstance structOrUnionInstance) {
             // Check which member of the struct or union is being updated
             List<String> elementMembers = List.of(elementName.split("\\."));
@@ -357,18 +357,18 @@ public class TDriverUtils {
                         }
                     }
                 } else if(elementRef instanceof CVariable var1){
-                    var1.values.set(step,new CValue(elementValue,match ? 1 : 0));
+                    var1.values.set(step,new CValue(elementValue,match ? 1 : -1));
                     break;
                 } else if(elementRef instanceof CEnumInstance enumInstance1){
-                    enumInstance1.values.set(step,new CValue(elementValue,match ? 1 : 0));
+                    enumInstance1.values.set(step,new CValue(elementValue,match ? 1 : -1));
                     break;
                 }
                 elementNameIndex++;
             }
             if(elementRef instanceof CVariable var1) {
-                var1.values.set(step, new CValue(elementValue, match ? 1 : 0));
+                var1.values.set(step, new CValue(elementValue, match ? 1 : -1));
             }else if(elementRef instanceof CEnumInstance enumInstance1){
-                enumInstance1.values.set(step,new CValue(elementValue,match ? 1 : 0));
+                enumInstance1.values.set(step,new CValue(elementValue,match ? 1 : -1));
             }else{
                 throw new Exception("Failed to parse test results");
             }

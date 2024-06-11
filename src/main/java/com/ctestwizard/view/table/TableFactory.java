@@ -199,7 +199,7 @@ public class TableFactory {
             }
             private void setBackgroundTableCell(CElement element){
                 if(element instanceof CVariable variable) {
-                    if(variable.values.get(i).valueStatus == 0) {
+                    if(variable.values.get(i).valueStatus == -1) {
                         setStyle("-fx-background-color: #ff0000;");
                     }else if(variable.values.get(i).valueStatus == 1) {
                         setStyle("-fx-background-color: #00ff00;");
@@ -207,7 +207,7 @@ public class TableFactory {
                         setStyle("");
                     }
                 }else if(element instanceof CEnumInstance enumInstance) {
-                    if (enumInstance.values.get(i).valueStatus == 0) {
+                    if (enumInstance.values.get(i).valueStatus == -1) {
                         setStyle("-fx-background-color: #ff0000;");
                     } else if (enumInstance.values.get(i).valueStatus == 1) {
                         setStyle("-fx-background-color: #00ff00;");
@@ -216,7 +216,7 @@ public class TableFactory {
                     }
                 }else if(element instanceof CStructOrUnionInstance structOrUnionInstance){
                     if(structOrUnionInstance.getPointers()!= 0) {
-                        if (structOrUnionInstance.values.get(i).valueStatus == 0) {
+                        if (structOrUnionInstance.values.get(i).valueStatus == -1) {
                             setStyle("-fx-background-color: #ff0000;");
                         } else if (structOrUnionInstance.values.get(i).valueStatus == 1) {
                             setStyle("-fx-background-color: #00ff00;");
@@ -270,13 +270,13 @@ public class TableFactory {
         valueColumn.setOnEditCommit(event -> {
             CElement element = event.getRowValue().getValue();
             if(element instanceof CVariable variable){
-                variable.values.set(i, new CValue(event.getNewValue(),-1));
+                variable.values.set(i, new CValue(event.getNewValue(),0));
             }else if(element instanceof CStructOrUnionInstance structOrUnionInstance){
                 if(structOrUnionInstance.getPointers()!= 0){
-                    structOrUnionInstance.values.set(i, new CValue(event.getNewValue(),-1));
+                    structOrUnionInstance.values.set(i, new CValue(event.getNewValue(),0));
                 }
             }else if(element instanceof CEnumInstance enumInstance){
-                enumInstance.values.set(i, new CValue(event.getNewValue(),-1));
+                enumInstance.values.set(i, new CValue(event.getNewValue(),0));
             }
         });
         return valueColumn;

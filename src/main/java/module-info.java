@@ -11,6 +11,7 @@ module com.ctestwizard {
     requires eu.hansolo.tilesfx;
     requires org.antlr.antlr4.runtime;
     requires org.apache.commons.io;
+    requires itextpdf;
 
     opens com.ctestwizard to javafx.fxml;
     exports com.ctestwizard;

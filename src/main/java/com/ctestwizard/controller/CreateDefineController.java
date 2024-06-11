@@ -8,14 +8,14 @@ import javafx.stage.Stage;
 
 public class CreateDefineController {
 
-    private MainController parentController;
+    private TestExecutionSettingsController parentController;
     private Stage stage;
     @FXML
     private TextField DefineName;
     @FXML
     private TextField DefineValue;
 
-    public void setup(MainController parentController, Stage stage){
+    public void setup(TestExecutionSettingsController parentController, Stage stage){
         this.parentController = parentController;
         this.stage = stage;
     }

@@ -39,9 +39,9 @@ public class TObjectTable {
     }
     public Image getCoverageImage() {
         Image image = null;
-        if(rsStatus == 0) {
+        if(covStatus == 0) {
             image = new Image(Objects.requireNonNull(MainApplication.class.getResourceAsStream("img/failed.png")));
-        }else if(rsStatus == 1){
+        }else if(covStatus == 1){
             image = new Image(Objects.requireNonNull(MainApplication.class.getResourceAsStream("img/passed.png")));
         }
         return image;
