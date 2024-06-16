@@ -376,6 +376,11 @@ public class TDriverUtils {
                 throw new Exception("Failed to parse test results");
             }
         }
+        else if(element instanceof CArray array){
+            for(CElement element1:array.getArrayMembers()){
+                __handleElement(element1,step,elementName,elementValue,match);
+            }
+        }
     }
 
     public static void cleanUpTestDriverFiles(TDriver testDriver){

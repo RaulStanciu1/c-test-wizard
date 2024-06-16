@@ -1,7 +1,7 @@
 package com.ctestwizard.controller;
 
 import com.ctestwizard.MainApplication;
-import com.ctestwizard.model.code.entity.CDefine;
+
 import com.ctestwizard.model.code.entity.CElement;
 import com.ctestwizard.model.code.entity.CFunction;
 import com.ctestwizard.model.coverage.CoverageInstrumenter;
@@ -17,14 +17,11 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
@@ -36,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 public class MainController{
@@ -188,6 +186,7 @@ public class MainController{
         controller.init();
         formStage.setScene(new Scene(root));
         formStage.setResizable(false);
+        formStage.getIcons().add(new Image(Objects.requireNonNull(MainApplication.class.getResourceAsStream("img/icon.png"))));
         formStage.show();
     }
     @FXML

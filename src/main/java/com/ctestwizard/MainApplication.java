@@ -5,7 +5,10 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
+
+import java.util.Objects;
 
 public class MainApplication extends Application {
     @Override
@@ -17,6 +20,8 @@ public class MainApplication extends Application {
         controller.setup(stage);
         controller.init();
         stage.setScene(scene);
+        stage.getIcons().add(new Image(Objects.requireNonNull(MainApplication.class.getResourceAsStream("img/icon.png"))));
+        stage.setTitle("CTestWizard - Project List");
         stage.show();
     }
 

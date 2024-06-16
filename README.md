@@ -13,10 +13,7 @@ A desktop application used for unit testing C code.
 - [x] Test Environment Editor
 - [x] Test Case Editor
 - [x] Test Project List
-- [ ] Test Coverage
-- [ ] Test Coverage Diagram
-- [ ] Test Object Report
+- [x] Test Coverage
+- [x] Test Object Report
 - [ ] GUI Improvements
 - [ ] Bug fixes + Testing
-- [ ] Documentation
-- [ ] User Manual

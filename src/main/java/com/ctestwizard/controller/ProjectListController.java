@@ -7,7 +7,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
+import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.apache.commons.io.FileUtils;
@@ -15,6 +18,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public class ProjectListController {
     private Stage stage;
@@ -34,6 +38,13 @@ public class ProjectListController {
         try{
             List<String> projectPaths = FileUtils.readLines(projectListFile, "UTF-8");
             ProjectList.getItems().addAll(projectPaths);
+            ContextMenu contextMenu = new ContextMenu();
+            MenuItem openItem = new MenuItem("Open Project");
+            MenuItem deleteItem = new MenuItem("Delete Project");
+            openItem.setOnAction(event -> openProject());
+            deleteItem.setOnAction(event -> deleteProject());
+            contextMenu.getItems().addAll(openItem,deleteItem);
+            ProjectList.setContextMenu(contextMenu);
         }catch (IOException e){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
@@ -59,6 +70,7 @@ public class ProjectListController {
             controller.init();
             mainStage.setScene(new Scene(root));
             stage.close();
+            mainStage.getIcons().add(new Image(Objects.requireNonNull(MainApplication.class.getResourceAsStream("img/icon.png"))));
             mainStage.show();
         } catch (Exception e) {
             e.printStackTrace();
@@ -69,6 +81,44 @@ public class ProjectListController {
             alert.showAndWait();
         }
 
+    }
+
+    public void deleteProject(){
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("Delete Project");
+        confirmation.setHeaderText("Are you sure you want to delete the project?");
+        confirmation.setContentText("This action cannot be undone");
+        confirmation.showAndWait();
+        if(confirmation.getResult().getButtonData().isCancelButton()){
+            return;
+        }
+
+        String projectPath = ProjectList.getSelectionModel().getSelectedItem();
+        if(projectPath == null) {
+            return;
+        }
+        File projectFile = new File(projectPath);
+        if(projectFile.exists()){
+            projectFile.delete();
+        }
+        File projectFolder = projectFile.getParentFile();
+        if(projectFolder.exists()){
+            projectFolder.delete();
+        }
+
+        ProjectList.getItems().remove(projectPath);
+        String projectListPath = System.getProperty("user.home") + File.separator + ".ctestwizard" + File.separator + "ProjectList.lst";
+        File projectListFile = new File(projectListPath);
+        //Truncate the file and rewrite the new projects
+        try{
+            FileUtils.writeLines(projectListFile,ProjectList.getItems());
+        }catch (IOException e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Could not delete project");
+            alert.setContentText("An error occurred while deleting the project");
+            alert.showAndWait();
+        }
     }
 
     @FXML
@@ -83,6 +133,7 @@ public class ProjectListController {
             controller.setup(mainStage,this);
             controller.init();
             mainStage.setScene(new Scene(root));
+            mainStage.getIcons().add(new Image(Objects.requireNonNull(MainApplication.class.getResourceAsStream("img/icon.png"))));
             mainStage.show();
         } catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
