@@ -22,7 +22,7 @@
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ctestwizard.controller.MainController">
+<VBox prefHeight="600.0" prefWidth="900.0" stylesheets="@font.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ctestwizard.controller.MainController">
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
@@ -71,38 +71,83 @@
                               <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                            </columnResizePolicy>
                         </TableView>
-                        <Button fx:id="NewTestCaseBtn" mnemonicParsing="false" onAction="#handleCreateNewTestCase" text="New Test Case" />
-                        <Button fx:id="NewTestStepBtn" mnemonicParsing="false" onAction="#handleNewTestStep" text="New Test Step" />
+                        <ButtonBar prefHeight="40.0" prefWidth="200.0">
+                          <buttons>
+                              <Button fx:id="NewTestCaseBtn" mnemonicParsing="false" onAction="#handleCreateNewTestCase" style="-fx-font-size: 12;" text="New Test Case" />
+                              <Button fx:id="NewTestStepBtn" mnemonicParsing="false" onAction="#handleNewTestStep" style="-fx-font-size: 12;" text="New Test Step" />
+                          </buttons>
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </ButtonBar>
                      </children>
                   </VBox>
                   <TabPane fx:id="MainPane" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
                     <tabs>
                       <Tab disable="true" text="Interface Editor">
                            <content>
-                              <VBox fx:id="InterfaceBox">
+                              <VBox fx:id="InterfaceBox" spacing="5.0">
                                  <children>
                                     <ButtonBar prefHeight="40.0" prefWidth="200.0">
                                       <buttons>
                                         <Button fx:id="NewUserGlobalBtn" mnemonicParsing="false" onAction="#handleNewUserGlobal" opacity="0.0" text="New User Global" />
                                       </buttons>
                                     </ButtonBar>
-                                 </children></VBox>
+                                 </children>
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" />
+                                 </padding></VBox>
                            </content>
                       </Tab>
                         <Tab disable="true" text="Stub Editor">
                            <content>
                               <SplitPane dividerPositions="0.3" prefHeight="160.0" prefWidth="200.0">
                                  <items>
-                                    <ListView fx:id="StubCodeList" prefHeight="200.0" prefWidth="200.0" />
+                                    <ListView fx:id="StubCodeList" prefHeight="200.0" prefWidth="200.0">
+                                       <padding>
+                                          <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                       </padding></ListView>
                                     <VBox fx:id="StubCodeBox" alignment="CENTER" spacing="10.0">
                                        <children>
                                           <Label fx:id="StubFunctionSignatureLabel" disable="true" text="Function Signature" />
                                           <TextField fx:id="StubFunctionSignature" disable="true" editable="false" />
                                           <Label fx:id="StubFunctionBodyLabel" disable="true" text="Function Body" />
                                           <TextArea fx:id="StubFunctionBody" disable="true" onKeyTyped="#setStubBody" />
-                                       </children></VBox>
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                       </padding></VBox>
                                  </items>
+                                 <padding>
+                                    <Insets left="10.0" right="10.0" />
+                                 </padding>
                               </SplitPane>
+                           </content>
+                        </Tab>
+                        <Tab disable="true" text="Prologue/Epilogue">
+                           <content>
+                              <VBox prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <VBox alignment="CENTER" spacing="10.0">
+                                       <children>
+                                          <Label text="Prologue" />
+                                          <TextArea fx:id="PrologueCode" disable="true" onKeyTyped="#setPrologueBody" prefHeight="170.0" prefWidth="300.0" />
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                       </padding>
+                                    </VBox>
+                                    <VBox fx:id="StubCodeBox1" alignment="CENTER" spacing="10.0">
+                                       <children>
+                                          <Label text="Epilogue" />
+                                          <TextArea fx:id="EpilogueCode" disable="true" onKeyTyped="#setEpilogueBody" prefHeight="170.0" prefWidth="302.0" />
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                       </padding>
+                                    </VBox>
+                                 </children>
+                              </VBox>
                            </content>
                         </Tab>
                       <Tab disable="true" text="Data Editor">
@@ -123,21 +168,22 @@
                 </Tab>
                 <Tab text="Test Case Definition">
                      <content>
-                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="2.0">
                            <children>
-                              <HBox alignment="CENTER">
-                                 <children>
-                                    <Label fx:id="TestCaseTitleLabel" disable="true" text="Title:" />
-                                    <TextField fx:id="TestCaseTitle" disable="true" onKeyTyped="#changeTitle" />
-                                 </children>
-                              </HBox>
-                              <HBox alignment="CENTER">
-                                 <children>
-                                    <Label fx:id="TestCaseDescriptionLabel" disable="true" text="Description:" />
-                                    <TextArea fx:id="TestCaseDescription" disable="true" onKeyTyped="#changeDescription" prefHeight="200.0" prefWidth="200.0" />
-                                 </children>
-                              </HBox>
+                              <Label fx:id="TestCaseTitleLabel" disable="true" text="Title:" />
+                              <TextField fx:id="TestCaseTitle" disable="true" onKeyTyped="#changeTitle">
+                                 <VBox.margin>
+                                    <Insets left="250.0" right="250.0" />
+                                 </VBox.margin>
+                              </TextField>
+                              <Label fx:id="TestCaseDescriptionLabel" disable="true" text="Description:" />
+                              <TextArea fx:id="TestCaseDescription" disable="true" onKeyTyped="#changeDescription" prefHeight="200.0" prefWidth="200.0" />
+                              <HBox alignment="CENTER" />
+                              <HBox alignment="CENTER" />
                            </children>
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" />
+                           </padding>
                         </VBox>
                      </content></Tab>
               </tabs>

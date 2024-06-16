@@ -9,6 +9,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import java.util.ArrayList;
@@ -36,9 +37,11 @@ public class TableFactory {
     public static TreeTableView<CElement> createOutputTable(TCase testCase){
         TreeTableView<CElement> tableView = new TreeTableView<>();
         TreeTableColumn<CElement, String> inputGlobalColumn = new TreeTableColumn<>("");
+        inputGlobalColumn.setPrefWidth(200);
         inputGlobalColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getValue().getType()+" "+param.getValue().getValue().getName()));
         tableView.getColumns().add(inputGlobalColumn);
         TreeItem<CElement> root = new TreeItem<>(new TRoot("Output"));
+        root.setExpanded(true);
         if(testCase.getOutput().getType().strip().equals("void")){
             tableView.setEditable(false);
             tableView.setRoot(root);
@@ -152,9 +155,11 @@ public class TableFactory {
     private static TreeTableView<CElement> createTable(TCase testCase,List<CElement> elements,String tableName){
         TreeTableView<CElement> tableView = new TreeTableView<>();
         TreeTableColumn<CElement, String> inputGlobalColumn = new TreeTableColumn<>("");
+        inputGlobalColumn.setPrefWidth(200);
         inputGlobalColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getValue().getType()+" "+param.getValue().getValue().getName()));
         tableView.getColumns().add(inputGlobalColumn);
         TreeItem<CElement> root = new TreeItem<>(new TRoot(tableName));
+        root.setExpanded(true);
         for(CElement element : elements){
             TreeItem<CElement> item = new TreeItem<>(element);
             if(element instanceof CStructOrUnionInstance structOrUnionInstance){
@@ -185,6 +190,7 @@ public class TableFactory {
 
     private static TreeTableColumn<CElement, String> getcElementStringTreeTableColumn(int i) {
         TreeTableColumn<CElement, String> valueColumn = new TreeTableColumn<>(String.valueOf(i +1));
+        valueColumn.setPrefWidth(50);
         valueColumn.setCellValueFactory(param -> _valueColumnFactory(param, i));
         valueColumn.setCellFactory(column -> new TreeTableCell<>(){
             private final TextField textField;
@@ -196,6 +202,7 @@ public class TableFactory {
                         commitEdit(textField.getText());
                     }
                 });
+                textField.setAlignment(Pos.BASELINE_RIGHT);
             }
             private void setBackgroundTableCell(CElement element){
                 if(element instanceof CVariable variable) {
@@ -237,6 +244,7 @@ public class TableFactory {
                     textField.setText(item);
                     CElement element = getTableRow().getItem();
                     setBackgroundTableCell(element);
+                    setAlignment(Pos.BASELINE_RIGHT);
                 }
             }
             @Override
@@ -297,6 +305,7 @@ public class TableFactory {
     }
     private static TreeItem<CElement> _getStructOrUnionChild(CStructOrUnionInstance instance){
         TreeItem<CElement> root = new TreeItem<>(instance);
+        root.setExpanded(true);
         for(CElement member : instance.getStructType().getMembers()){
             TreeItem<CElement> memberItem = new TreeItem<>(member);
             if(member instanceof CStructOrUnionInstance structOrUnionInstance){

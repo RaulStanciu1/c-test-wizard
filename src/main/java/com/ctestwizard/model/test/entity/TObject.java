@@ -12,9 +12,13 @@ public class TObject implements Serializable {
     private TInterface testInterface;
     private List<TCase> testCases;
     private final TProject parent;
+    private String prologueCode;
+    private String epilogueCode;
     public TObject(TProject parent,CFunction testFunction){
         this.parent = parent;
         this.testFunction = testFunction;
+        this.prologueCode = "";
+        this.epilogueCode = "";
     }
     public static TObject newTObject(TProject parent,CParserDetector parser, CFunction testFunction){
         CParserDetector newParser = parser.clone();
@@ -60,6 +64,22 @@ public class TObject implements Serializable {
 
     public TProject getParent() {
         return parent;
+    }
+
+    public String getPrologueCode() {
+        return prologueCode;
+    }
+
+    public void setPrologueCode(String prologueCode) {
+        this.prologueCode = prologueCode;
+    }
+
+    public String getEpilogueCode() {
+        return epilogueCode;
+    }
+
+    public void setEpilogueCode(String epilogueCode) {
+        this.epilogueCode = epilogueCode;
     }
 
     private List<CValue> nEmptyList(int n){

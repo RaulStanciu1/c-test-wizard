@@ -91,6 +91,10 @@ public class MainController{
     private TableColumn<TCaseTable, String> TestCaseTitleColumn;
     @FXML
     private TableColumn<TCaseTable, Image> TestCaseRsColumn;
+    @FXML
+    private TextArea PrologueCode;
+    @FXML
+    private TextArea EpilogueCode;
 
     public void setup(TProject project, Stage parentStage){
         this.project = project;
@@ -99,10 +103,6 @@ public class MainController{
     public void init(){
         TestObjectTable.getItems().clear();
         TestObjectColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getTestObject().getTestFunction().getName()));
-        TestObjectColumn.setPrefWidth(TableView.USE_COMPUTED_SIZE);
-        TestObjectColumn.setMinWidth(150);
-        TestObjectRsColumn.setPrefWidth(30);
-        TestObjectRsColumn.setResizable(false);
         TestObjectRsColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().getResultImage()));
         TestObjectRsColumn.setCellFactory(param -> new TableCell<>(){
             @Override
@@ -118,8 +118,6 @@ public class MainController{
                 }
             }
         });
-        TestObjectCovColumn.setPrefWidth(30);
-        TestObjectCovColumn.setResizable(false);
         TestObjectCovColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().getCoverageImage()));
         TestObjectCovColumn.setCellFactory(param -> new TableCell<>(){
             @Override
@@ -139,10 +137,7 @@ public class MainController{
 
         TestCaseTable.getItems().clear();
         TestCaseIdColumn.setCellValueFactory(param -> new SimpleStringProperty(String.valueOf(param.getValue().getTestCase().getId())));
-        TestCaseIdColumn.setPrefWidth(50);
         TestCaseTitleColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getTestCase().getTitle()));
-        TestCaseTitleColumn.setPrefWidth(150);
-        TestCaseRsColumn.setResizable(false);
 
         TestCaseRsColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().getResultImage()));
         TestCaseRsColumn.setCellFactory(param -> new TableCell<>(){
@@ -159,7 +154,6 @@ public class MainController{
                 }
             }
         });
-        TestCaseRsColumn.setPrefWidth(30);
         startMemoryMonitoring();
 
         MainPane.getSelectionModel().selectedItemProperty().addListener((observable,oldTab,newTab) -> {
@@ -170,10 +164,37 @@ public class MainController{
             }
         });
 
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem removeTestCase = getMenuItem();
+        contextMenu.getItems().add(removeTestCase);
+        TestCaseTable.setContextMenu(contextMenu);
+
         ExecuteTestObjectBtn.setDisable(true);
         NewTestCaseBtn.setDisable(true);
         NewTestStepBtn.setDisable(true);
     }
+
+    private MenuItem getMenuItem() {
+        MenuItem removeTestCase = new MenuItem("Delete Test Case");
+        removeTestCase.setOnAction(event -> {
+            TCaseTable selectedTable = TestCaseTable.getSelectionModel().getSelectedItem();
+            if(selectedTable == null){
+                return;
+            }
+            TCase selectedCase = selectedTable.getTestCase();
+            if(selectedCase == null){
+                return;
+            }
+            TObject selectedObject = TestObjectTable.getSelectionModel().getSelectedItem().getTestObject();
+            if(selectedObject == null){
+                return;
+            }
+            selectedObject.getTestCases().remove(selectedCase);
+            TestCaseTable.getItems().remove(selectedTable);
+        });
+        return removeTestCase;
+    }
+
     @FXML
     public void handleTestExecutionSettingsClick() throws IOException {
         Stage formStage = new Stage();
@@ -193,7 +214,10 @@ public class MainController{
     public void handleTObjectClick(){
         MainPane.getTabs().get(0).setDisable(false);
         MainPane.getTabs().get(1).setDisable(false);
-        MainPane.getTabs().get(2).setDisable(true);
+        MainPane.getTabs().get(2).setDisable(false);
+        MainPane.getTabs().get(3).setDisable(true);
+        PrologueCode.setDisable(false);
+        EpilogueCode.setDisable(false);
         MainPane.getSelectionModel().select(0);
         TObjectTable selectedTable = TestObjectTable.getSelectionModel().getSelectedItem();
         if(selectedTable == null){
@@ -203,6 +227,8 @@ public class MainController{
         if(selectedObject == null){
             return;
         }
+        PrologueCode.setText(selectedObject.getPrologueCode());
+        EpilogueCode.setText(selectedObject.getEpilogueCode());
         NewTestCaseBtn.setDisable(false);
         ExecuteTestObjectBtn.setDisable(false);
         NewTestStepBtn.setDisable(true);
@@ -250,8 +276,11 @@ public class MainController{
     public void handleTCaseClick(){
         MainPane.getTabs().get(0).setDisable(true);
         MainPane.getTabs().get(1).setDisable(true);
-        MainPane.getTabs().get(2).setDisable(false);
-        MainPane.getSelectionModel().select(2);
+        MainPane.getTabs().get(2).setDisable(true);
+        MainPane.getTabs().get(3).setDisable(false);
+        PrologueCode.setDisable(true);
+        EpilogueCode.setDisable(true);
+        MainPane.getSelectionModel().select(3);
         TCaseTable selectedTable = TestCaseTable.getSelectionModel().getSelectedItem();
         if(selectedTable == null){
             return;
@@ -496,18 +525,57 @@ public class MainController{
     }
 
     @FXML
-    public void closeProject(){
-
+    public void closeProject() throws IOException {
+        Stage formStage = new Stage();
+        FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource("project-list.fxml"));
+        Parent root = loader.load();
+        ProjectListController controller = loader.getController();
+        controller.setup(formStage);
+        controller.init();
+        formStage.setScene(new Scene(root));
+        formStage.setResizable(false);
+        parentStage.close();
+        formStage.show();
     }
 
     @FXML
-    public void staticAnalysis() throws Exception{
+    public void staticAnalysis(){
         TObject selectedObject = TestObjectTable.getSelectionModel().getSelectedItem().getTestObject();
         if(selectedObject == null){
             return;
         }
-        CoverageInstrumenter.instrumentObject(selectedObject);
+        try{
+            List<String> log = StaticAnalyzer.staticAnalysis(selectedObject);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Success");
+            alert.setHeaderText("Static Analysis Completed");
+            alert.setContentText(String.join("\n",log));
+            alert.showAndWait();
+        }catch(Exception e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Static Analysis Failed");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
+        }
+    }
 
+    @FXML
+    public void setPrologueBody(){
+        TObject selectedObject = TestObjectTable.getSelectionModel().getSelectedItem().getTestObject();
+        if(selectedObject == null){
+            return;
+        }
+        selectedObject.setPrologueCode(PrologueCode.getText());
+    }
+
+    @FXML
+    public void setEpilogueBody(){
+        TObject selectedObject = TestObjectTable.getSelectionModel().getSelectedItem().getTestObject();
+        if(selectedObject == null){
+            return;
+        }
+        selectedObject.setEpilogueCode(EpilogueCode.getText());
     }
 
 

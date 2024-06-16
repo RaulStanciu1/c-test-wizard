@@ -82,6 +82,7 @@ public class TWriter {
                 }
             }
         }
+        sb.append("__ctw__prologue__();\n");
         return sb.toString();
     }
 
@@ -149,6 +150,7 @@ public class TWriter {
             }
             sb.append(");\n");
         }
+        sb.append("__ctw__epilogue__();\n");
         return sb.toString();
     }
 
@@ -225,7 +227,6 @@ public class TWriter {
                 }
             }
         }
-
         return sb.toString();
     }
 

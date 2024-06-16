@@ -7,6 +7,7 @@ import com.ctestwizard.model.test.driver.TResults;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class TCase implements Serializable {
     private final TObject parent;
@@ -31,24 +32,26 @@ public class TCase implements Serializable {
         for(CElement parameter : parent.getTestInterface().getParameters()) {
             parameters.add(parameter.clone());
         }
-        for(CElement global : parent.getTestInterface().getGlobals().keySet()) {
-            if(parent.getTestInterface().getGlobals().get(global) == TPassing.IN ||
-                parent.getTestInterface().getGlobals().get(global) == TPassing.INOUT){
-                inputGlobals.add(global.clone());
-            }else if(parent.getTestInterface().getGlobals().get(global) == TPassing.OUT ||
-                parent.getTestInterface().getGlobals().get(global) == TPassing.INOUT){
-                outputGlobals.add(global.clone());
+
+        for(Map.Entry<CElement,TPassing> entry : parent.getTestInterface().getGlobals().entrySet()){
+            if(entry.getValue() == TPassing.IN || entry.getValue() == TPassing.INOUT){
+                inputGlobals.add(entry.getKey().clone());
+            }
+            if(entry.getValue() == TPassing.OUT || entry.getValue() == TPassing.INOUT){
+                outputGlobals.add(entry.getKey().clone());
             }
         }
-        for(CElement userGlobal : parent.getTestInterface().getUserGlobals().keySet()){
-            if(parent.getTestInterface().getUserGlobals().get(userGlobal) == TPassing.IN ||
-                    parent.getTestInterface().getGlobals().get(userGlobal) == TPassing.INOUT){
-                inputGlobals.add(userGlobal.clone());
-            }else if(parent.getTestInterface().getGlobals().get(userGlobal) == TPassing.OUT ||
-                    parent.getTestInterface().getGlobals().get(userGlobal) == TPassing.INOUT){
-                outputGlobals.add(userGlobal.clone());
+
+        for(Map.Entry<CElement,TPassing> entry : parent.getTestInterface().getUserGlobals().entrySet()){
+            if(entry.getValue() == TPassing.IN || entry.getValue() == TPassing.INOUT){
+                inputGlobals.add(entry.getKey().clone());
+            }
+            if(entry.getValue() == TPassing.OUT || entry.getValue() == TPassing.INOUT){
+                outputGlobals.add(entry.getKey().clone());
             }
         }
+
+
         this.parameters=parameters;
         this.inputGlobals=inputGlobals;
         this.outputGlobals=outputGlobals;
@@ -142,18 +145,25 @@ public class TCase implements Serializable {
         // Update the test case elements based on the modified test interface
         TInterface tInterface = this.parent.getTestInterface();
         //Update the globals
-        for(CElement global: tInterface.getGlobals().keySet()){
-            TPassing globalPassing = tInterface.getGlobals().get(global);
+        for(Map.Entry<CElement,TPassing> entry : tInterface.getGlobals().entrySet()){
+            TPassing globalPassing = entry.getValue();
+            CElement global = entry.getKey();
             if(globalPassing == TPassing.IN || globalPassing == TPassing.INOUT){
-                if(containsGlobal(inputGlobals, global)){
+                if(!containsGlobal(inputGlobals, global)){
                     CElement updatedGlobal = updateGlobal(global.clone());
                     inputGlobals.add(updatedGlobal);
                 }
+                if(globalPassing == TPassing.IN){
+                    removeGlobal(outputGlobals,global);
+                }
             }
             if(globalPassing == TPassing.OUT || globalPassing == TPassing.INOUT){
-                if(containsGlobal(outputGlobals, global)){
+                if(!containsGlobal(outputGlobals, global)){
                     CElement updatedGlobal = updateGlobal(global.clone());
                     outputGlobals.add(updatedGlobal);
+                }
+                if(globalPassing == TPassing.OUT){
+                    removeGlobal(inputGlobals,global);
                 }
             }
             if(globalPassing == TPassing.NONE){
@@ -162,18 +172,25 @@ public class TCase implements Serializable {
             }
         }
         //Update the user globals
-        for(CElement userGlobal: tInterface.getUserGlobals().keySet()){
-            TPassing globalPassing = tInterface.getUserGlobals().get(userGlobal);
+        for(Map.Entry<CElement,TPassing> entry : tInterface.getUserGlobals().entrySet()){
+            CElement userGlobal = entry.getKey();
+            TPassing globalPassing = entry.getValue();
             if(globalPassing == TPassing.IN || globalPassing == TPassing.INOUT){
-                if(containsGlobal(inputGlobals, userGlobal)){
+                if(!containsGlobal(inputGlobals, userGlobal)){
                     CElement updatedGlobal = updateGlobal(userGlobal.clone());
                     inputGlobals.add(updatedGlobal);
                 }
+                if(globalPassing == TPassing.IN){
+                    removeGlobal(outputGlobals,userGlobal);
+                }
             }
             if(globalPassing == TPassing.OUT || globalPassing == TPassing.INOUT){
-                if(containsGlobal(outputGlobals, userGlobal)){
+                if(!containsGlobal(outputGlobals, userGlobal)){
                     CElement updatedGlobal = updateGlobal(userGlobal.clone());
                     outputGlobals.add(updatedGlobal);
+                }
+                if(globalPassing == TPassing.OUT){
+                    removeGlobal(inputGlobals,userGlobal);
                 }
             }
             if(globalPassing == TPassing.NONE){
@@ -195,10 +212,10 @@ public class TCase implements Serializable {
     private boolean containsGlobal(List<CElement> globals, CElement global){
         for(CElement element : globals){
             if(element.getName().equals(global.getName())){
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     private CElement updateGlobal(CElement global){

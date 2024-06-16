@@ -54,7 +54,6 @@ public class ProjectListController {
         }
     }
 
-    @FXML
     public void openProject() {
         try{
             Stage mainStage = new Stage();
@@ -71,9 +70,9 @@ public class ProjectListController {
             mainStage.setScene(new Scene(root));
             stage.close();
             mainStage.getIcons().add(new Image(Objects.requireNonNull(MainApplication.class.getResourceAsStream("img/icon.png"))));
+            mainStage.setTitle("CTestWizard - " + project.getName());
             mainStage.show();
         } catch (Exception e) {
-            e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText("Could not open project");
@@ -98,9 +97,6 @@ public class ProjectListController {
             return;
         }
         File projectFile = new File(projectPath);
-        if(projectFile.exists()){
-            projectFile.delete();
-        }
         File projectFolder = projectFile.getParentFile();
         if(projectFolder.exists()){
             projectFolder.delete();
@@ -134,6 +130,7 @@ public class ProjectListController {
             controller.init();
             mainStage.setScene(new Scene(root));
             mainStage.getIcons().add(new Image(Objects.requireNonNull(MainApplication.class.getResourceAsStream("img/icon.png"))));
+            mainStage.setTitle("CTestWizard - Create Project");
             mainStage.show();
         } catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);

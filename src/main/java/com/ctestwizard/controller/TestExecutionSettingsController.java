@@ -69,6 +69,9 @@ public class TestExecutionSettingsController {
                 new TProperty("Preprocess Flag",project.getTestDriver().getPreprocessFlag()),
                 new TProperty("Compile Flag",project.getTestDriver().getCompileFlag()),
                 new TProperty("Output Flag",project.getTestDriver().getOutputFlag()),
+                new TProperty("Include Flag",project.getTestDriver().getIncludeFlag()),
+                new TProperty("Linker Flag",project.getTestDriver().getLinkerFlag()),
+                new TProperty("Additional Flags",project.getTestDriver().getAdditionalFlags()),
                 new TProperty("Source File Path",project.getTestDriver().getSourceFilePath()),
                 new TProperty("Project Path",project.getTestDriver().getProjectPath()),
                 new TProperty("Test Header",project.getTestDriver().getTestHeaderPath()),
@@ -84,16 +87,31 @@ public class TestExecutionSettingsController {
     private void setupDefinesList(){
         DefinesList.getItems().clear();
         project.getTestDriver().getDefines().forEach(define -> DefinesList.getItems().add(define));
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem removeItem = new MenuItem("Remove Define");
+        removeItem.setOnAction(event -> removeSelectedDefine());
+        contextMenu.getItems().add(removeItem);
+        DefinesList.setContextMenu(contextMenu);
     }
 
     private void setupLinkerList(){
         LinkerList.getItems().clear();
         project.getTestDriver().getLinker().forEach(linker -> LinkerList.getItems().add(linker));
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem removeItem = new MenuItem("Remove Linker");
+        removeItem.setOnAction(event -> removeSelectedLinker());
+        contextMenu.getItems().add(removeItem);
+        LinkerList.setContextMenu(contextMenu);
     }
 
     private void setupIncludeList(){
         IncludeList.getItems().clear();
         project.getTestDriver().getIncludeDirectories().forEach(include -> IncludeList.getItems().add(include));
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem removeItem = new MenuItem("Remove Include Directory");
+        removeItem.setOnAction(event -> removeSelectedDirectory());
+        contextMenu.getItems().add(removeItem);
+        IncludeList.setContextMenu(contextMenu);
     }
 
     @FXML
@@ -114,6 +132,15 @@ public class TestExecutionSettingsController {
                     break;
                 case "Output Flag":
                     project.getTestDriver().setOutputFlag(property.getValue());
+                    break;
+                case "Include Flag":
+                    project.getTestDriver().setIncludeFlag(property.getValue());
+                    break;
+                case "Linker Flag":
+                    project.getTestDriver().setLinkerFlag(property.getValue());
+                    break;
+                case "Additional Flags":
+                    project.getTestDriver().setAdditionalFlags(property.getValue());
                     break;
                 case "Source File Path":
                     project.getTestDriver().setSourceFilePath(property.getValue());
@@ -175,7 +202,7 @@ public class TestExecutionSettingsController {
         dialog.setHeaderText("Enter the Linker File");
         dialog.setContentText("Linker:");
         dialog.showAndWait().ifPresent(linker -> {
-            project.getTestDriver().getLinker().add(linker);
+            project.getTestDriver().addLinker(linker);
             LinkerList.getItems().add(linker);
         });
     }
@@ -197,7 +224,7 @@ public class TestExecutionSettingsController {
         dialog.setHeaderText("Enter the Include Directory");
         dialog.setContentText("Include Directory:");
         dialog.showAndWait().ifPresent(directory -> {
-            project.getTestDriver().getIncludeDirectories().add(directory);
+            project.getTestDriver().addIncludeDirectory(directory);
             IncludeList.getItems().add(directory);
         });
     }

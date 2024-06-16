@@ -39,6 +39,7 @@ public class TDriver implements Serializable {
         this.coverageSignificance = 80.0;
         this.resultSignificance = 100.0;
         this.coverageEnabled = false;
+        this.reportEnabled = false;
     }
 
     /**
@@ -74,6 +75,9 @@ public class TDriver implements Serializable {
             }
             processBuilder.command().add(compiler.getOutputFlag());
             processBuilder.command().add("ctw_src_pre.c");
+            if(compiler.getAdditionalFlags() != null && !compiler.getAdditionalFlags().isEmpty()){
+                processBuilder.command().add(compiler.getAdditionalFlags());
+            }
             Process process = processBuilder.start();
             consoleWriter.redirectOutput(process);
             int exitCode = process.waitFor();
@@ -101,6 +105,9 @@ public class TDriver implements Serializable {
             processBuilder.directory(projectDir);
             processBuilder.command().add(compiler.getOutputFlag());
             processBuilder.command().add("ctw_src_pre.c");
+            if(compiler.getAdditionalFlags() != null && !compiler.getAdditionalFlags().isEmpty()){
+                processBuilder.command().add(compiler.getAdditionalFlags());
+            }
             Process process = processBuilder.start();
             consoleWriter.redirectOutput(process);
             int exitCode = process.waitFor();
@@ -123,6 +130,9 @@ public class TDriver implements Serializable {
             processBuilder.directory(projectDir);
             processBuilder.command().add(compiler.getOutputFlag());
             processBuilder.command().add("ctw_src_pre.c");
+            if(compiler.getAdditionalFlags() != null && !compiler.getAdditionalFlags().isEmpty()){
+                processBuilder.command().add(compiler.getAdditionalFlags());
+            }
             Process process = processBuilder.start();
             consoleWriter.redirectOutput(process);
             int exitCode = process.waitFor();
@@ -233,17 +243,19 @@ public class TDriver implements Serializable {
             TDriverUtils.generateTestDriverFile(_parent);
             //Step 5: Create the stub code file
             TDriverUtils.createStubCodeFile(testObject,_parent);
-            //Step 6: Generate the test data file
+            //Step 6: Create the prologue and epilogue file
+            TDriverUtils.generatePrologueEpilogueFile(testObject,_parent);
+            //Step 7: Generate the test data file
             TDriverUtils.generateTestDataFile(testObject,_parent);
-            //Step 7: Generate the test steps file
+            //Step 8: Generate the test steps file
             TDriverUtils.generateTestStepsFile(testObject,_parent);
-            //Step 8: Compile the test driver file
+            //Step 9: Compile the test driver file
             TDriverUtils.compileTestDriverFile(this,consoleWriter);
-            //Step 9: Run the test driver file
+            //Step 10: Run the test driver file
             TDriverUtils.runTestDriverFile(this,consoleWriter);
-            //Step 10: Parse the test data file and return the test cases
+            //Step 11: Parse the test data file and return the test cases
             List<TResults> results = TDriverUtils.parseTestDataOutputFile(testObject,_parent);
-            //Step 11: Get a summary of the results
+            //Step 12: Get a summary of the results
             return new TSummary(testObject,results,false);
         } finally{
             TDriverUtils.cleanUpTestDriverFiles(this);
@@ -266,18 +278,21 @@ public class TDriver implements Serializable {
             TDriverUtils.generateTestDriverCoverageFile(_parent);
             //Step 5: Create the stub code file
             TDriverUtils.createStubCodeFile(testObject,_parent);
-            //Step 6: Generate the test data file
+            //Step 6: Create the prologue and epilogue file
+            TDriverUtils.generatePrologueEpilogueFile(testObject,_parent);
+            //Step 7: Generate the test data file
             TDriverUtils.generateTestDataFile(testObject,_parent);
-            //Step 7: Generate the test steps file
+            //Step 8: Generate the test steps file
             TDriverUtils.generateTestStepsFile(testObject,_parent);
-            //Step 8: Instrument the source file with the decisions
+            //Step 9: Instrument the source file with the decisions
             CoverageInstrumenter.instrumentObject(testObject);
-            //Step 9: Compile the test driver file
+            //Step 10: Compile the test driver file
             TDriverUtils.compileTestDriverFile(this,consoleWriter);
-            //Step 10: Run the test driver file
+            //Step 11: Run the test driver file
             TDriverUtils.runTestDriverFile(this,consoleWriter);
-            //Step 11: Parse the test data file and return the test cases
+            //Step 12: Parse the test data file and return the test cases
             List<TResults> results = TDriverUtils.parseTestDataOutputFile(testObject,_parent);
+            //Step 13: Get a summary of the results
             return new TSummary(testObject,results,true);
         }finally{
             TDriverUtils.cleanUpTestDriverFiles(this);
@@ -368,6 +383,14 @@ public class TDriver implements Serializable {
         this.compiler.setIncludeFlag(includeFlag);
     }
 
+    public String getAdditionalFlags() {
+        return compiler.getAdditionalFlags();
+    }
+
+    public void setAdditionalFlags(String additionalFlags) {
+        this.compiler.setAdditionalFlags(additionalFlags);
+    }
+
     public Double getCoverageSignificance() {
         return coverageSignificance;
     }
@@ -398,5 +421,13 @@ public class TDriver implements Serializable {
 
     public void setReportEnabled(boolean reportEnabled) {
         this.reportEnabled = reportEnabled;
+    }
+
+    public void addIncludeDirectory(String includeDirectory){
+        compiler.getIncludeDirectories().add(includeDirectory);
+    }
+
+    public void addLinker(String linker){
+        compiler.getLinkerFiles().add(linker);
     }
 }

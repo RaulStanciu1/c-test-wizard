@@ -43,6 +43,25 @@ public class TDriverUtils {
         }
     }
 
+    public static void generatePrologueEpilogueFile(TObject testObject, TProject parent) throws Exception{
+        File prologueEpilogueFile = new File(parent.getTestDriver().getProjectPath() + File.separator + "ctw" + File.separator + "ctw_prolog_epilogue.c");
+        if(prologueEpilogueFile.exists()){
+            if(!prologueEpilogueFile.delete()){
+                throw new Exception("Failed to delete prologue epilogue file");
+            }
+        }
+        if(!prologueEpilogueFile.createNewFile()){
+            throw new Exception("Failed to create prologue epilogue file");
+        }
+        String prologueEpilogueFileContent = "void __ctw__prologue__(void){\n" +
+                testObject.getPrologueCode() +
+                "}\n" +
+                "void __ctw__epilogue__(void){\n" +
+                testObject.getEpilogueCode() +
+                "}\n";
+        FileUtils.writeStringToFile(prologueEpilogueFile, prologueEpilogueFileContent,"UTF-8",false);
+    }
+
     public static void generateTestDriverFile(TProject parent) throws IOException, NullPointerException {
         File testDriverFile = new File(parent.getTestDriver().getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_driver.c");
         if (!testDriverFile.exists()) {
@@ -62,6 +81,7 @@ public class TDriverUtils {
                 "#include \""+path+"\"\n"+"""
                 #include "ctw_src_pre.c"
                 #include "ctw_stubs.c"
+                #include "ctw_prolog_epilogue.c"
                 #include "ctw_test_data.c"
 
 
@@ -255,7 +275,6 @@ public class TDriverUtils {
         processBuilder.directory(new File(driver.getProjectPath()));
         Process process = processBuilder.start();
         consoleWriter.redirectOutput(process);
-
         int exitCode = process.waitFor();
         if (exitCode != 0) {
             throw new Exception("Failed to compile test driver file");

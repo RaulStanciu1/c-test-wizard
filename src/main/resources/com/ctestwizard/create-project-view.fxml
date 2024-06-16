@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.Label?>
@@ -7,64 +8,181 @@
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ctestwizard.controller.CreateProjectController">
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="430.0" prefWidth="582.0" spacing="25.0" stylesheets="@font.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ctestwizard.controller.CreateProjectController">
    <children>
-      <TabPane tabClosingPolicy="UNAVAILABLE">
+      <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
         <tabs>
           <Tab text="Project">
                <content>
-                  <VBox prefHeight="200.0" prefWidth="100.0">
+                  <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="10.0">
                      <children>
-                        <Label text="Project Name:" />
-                        <TextField fx:id="ProjectName" />
-                        <Label text="Source File Path:" />
-                        <HBox alignment="CENTER">
+                        <HBox alignment="TOP_CENTER">
                            <children>
-                              <TextField fx:id="SourceFilePath" />
-                              <Button mnemonicParsing="false" onAction="#selectSourceFile" text="..." />
+                              <Label text="Project Name" />
+                              <Label text="*" textFill="RED" />
                            </children>
                         </HBox>
-                        <Label text="Project Path:" />
-                        <HBox alignment="CENTER">
+                        <TextField fx:id="ProjectName">
+                           <VBox.margin>
+                              <Insets left="100.0" right="100.0" />
+                           </VBox.margin></TextField>
+                        <HBox alignment="TOP_CENTER">
                            <children>
-                              <TextField fx:id="ProjectPath" />
-                              <Button mnemonicParsing="false" onAction="#selectProjectDirectory" text="..." />
+                              <Label text="Source File Path" />
+                              <Label text="*" textFill="RED" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" spacing="20.0">
+                           <children>
+                              <TextField fx:id="SourceFilePath" editable="false" HBox.hgrow="ALWAYS" />
+                              <Button mnemonicParsing="false" onAction="#selectSourceFile" text="...">
+                                 <effect>
+                                    <DropShadow blurType="GAUSSIAN" />
+                                 </effect></Button>
+                           </children>
+                        </HBox>
+                        <HBox alignment="TOP_CENTER">
+                           <children>
+                              <Label text="Project Path" />
+                              <Label text="*" textFill="RED" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" spacing="20.0">
+                           <children>
+                              <TextField fx:id="ProjectPath" editable="false" HBox.hgrow="ALWAYS" />
+                              <Button mnemonicParsing="false" onAction="#selectProjectDirectory" text="...">
+                                 <effect>
+                                    <DropShadow blurType="GAUSSIAN" />
+                                 </effect></Button>
                            </children>
                         </HBox>
                      </children>
+                     <padding>
+                        <Insets bottom="10.0" left="25.0" right="25.0" top="10.0" />
+                     </padding>
                   </VBox>
                </content>
           </Tab>
           <Tab text="Compiler">
                <content>
-                  <VBox prefHeight="200.0" prefWidth="100.0">
+                  <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0">
                      <children>
-                        <Label text="Compiler Command:" />
-                        <TextField fx:id="CompilerCommand" />
-                        <Label text="Preprocess Flag:" />
-                        <TextField fx:id="PreprocessFlag" />
-                        <Label text="Compile Flag:" />
-                        <TextField fx:id="CompileFlag" />
-                        <Label text="Output Flag:" />
-                        <TextField fx:id="OutputFlag" />
-                        <Label text="Include Flag:" />
-                        <TextField fx:id="IncludeFlag" />
-                        <Label text="Linker Flag:" />
-                        <TextField fx:id="LinkerFlag" />
+                        <HBox alignment="TOP_CENTER">
+                           <children>
+                              <Label text="Compiler" />
+                              <Label text="*" textFill="RED" />
+                           </children>
+                        </HBox>
+                        <TextField fx:id="CompilerCommand">
+                           <VBox.margin>
+                              <Insets left="10.0" right="10.0" />
+                           </VBox.margin>
+                        </TextField>
+                        <Label text="Flags:" />
+                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="50.0">
+                           <children>
+                              <VBox prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <HBox alignment="TOP_CENTER">
+                                       <children>
+                                          <Label text="Output" />
+                                          <Label text="*" textFill="RED" />
+                                       </children>
+                                    </HBox>
+                                    <TextField fx:id="OutputFlag">
+                                       <VBox.margin>
+                                          <Insets />
+                                       </VBox.margin>
+                                    </TextField>
+                                 </children>
+                              </VBox>
+                              <VBox prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <HBox alignment="TOP_CENTER">
+                                       <children>
+                                          <Label text="Preprocess" />
+                                          <Label text="*" textFill="RED" />
+                                       </children>
+                                    </HBox>
+                                    <TextField fx:id="PreprocessFlag">
+                                       <VBox.margin>
+                                          <Insets />
+                                       </VBox.margin>
+                                    </TextField>
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="50.0">
+                           <children>
+                              <VBox prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <HBox alignment="TOP_CENTER">
+                                       <children>
+                                          <Label text="Include" />
+                                          <Label text="*" textFill="RED" />
+                                       </children>
+                                    </HBox>
+                                    <TextField fx:id="IncludeFlag">
+                                       <VBox.margin>
+                                          <Insets />
+                                       </VBox.margin>
+                                    </TextField>
+                                 </children>
+                              </VBox>
+                              <VBox prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                                    <HBox alignment="TOP_CENTER">
+                                       <children>
+                                          <Label text="Compile" />
+                                          <Label text="*" textFill="RED" />
+                                       </children>
+                                    </HBox>
+                                    <TextField fx:id="CompileFlag">
+                                       <VBox.margin>
+                                          <Insets />
+                                       </VBox.margin>
+                                    </TextField>
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <HBox alignment="TOP_CENTER">
+                                 <children>
+                                    <Label text="Linker" />
+                                    <Label text="*" textFill="RED" />
+                                 </children>
+                              </HBox>
+                              <TextField fx:id="LinkerFlag">
+                                 <VBox.margin>
+                                    <Insets left="250.0" right="250.0" />
+                                 </VBox.margin>
+                              </TextField>
+                           </children>
+                        </VBox>
+                        <Label text="Additional Flags:" />
+                        <TextField fx:id="AdditionalFlags">
+                           <VBox.margin>
+                              <Insets left="10.0" right="10.0" />
+                           </VBox.margin>
+                        </TextField>
                      </children>
                   </VBox>
                </content>
           </Tab>
             <Tab text="Include">
                <content>
-                  <VBox prefHeight="200.0" prefWidth="100.0">
+                  <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0">
                      <children>
                         <ButtonBar prefHeight="40.0" prefWidth="200.0">
                           <buttons>
-                            <Button mnemonicParsing="false" text="Add" />
+                            <Button mnemonicParsing="false" onAction="#addIncludeDirectory" text="Add" />
                           </buttons>
                         </ButtonBar>
                         <Label text="Include Directories:" />
@@ -75,11 +193,11 @@
             </Tab>
             <Tab text="Linker">
                <content>
-                  <VBox prefHeight="200.0" prefWidth="100.0">
+                  <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0">
                      <children>
                         <ButtonBar prefHeight="40.0" prefWidth="200.0">
                           <buttons>
-                            <Button mnemonicParsing="false" text="Add" />
+                            <Button mnemonicParsing="false" onAction="#addLinker" text="Add" />
                           </buttons>
                         </ButtonBar>
                         <Label text="Linker:" />
@@ -89,7 +207,16 @@
                </content>
             </Tab>
         </tabs>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
       </TabPane>
-      <Button contentDisplay="TOP" mnemonicParsing="false" onAction="#createProject" text="Create Project" />
+      <Button contentDisplay="TOP" mnemonicParsing="false" onAction="#createProject" text="Create Project">
+         <effect>
+            <DropShadow blurType="GAUSSIAN" />
+         </effect></Button>
    </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
 </VBox>

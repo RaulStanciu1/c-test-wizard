@@ -30,7 +30,6 @@ public class TProject implements Serializable {
             ObjectInputStream in = new ObjectInputStream(fileIn)){
             return (TProject) in.readObject();
         } catch (Exception e) {
-            e.printStackTrace();
             throw new Exception("Could not load project");
         }
     }
@@ -83,6 +82,9 @@ public class TProject implements Serializable {
         }
         for(String linkerFile : compiler.getLinkerFiles()){
             processBuilder.command().add(compiler.getLinkerFlag()+linkerFile);
+        }
+        if(compiler.getAdditionalFlags() != null && !compiler.getAdditionalFlags().isEmpty()){
+            processBuilder.command().add(compiler.getAdditionalFlags());
         }
         Process process = processBuilder.start();
         int exitCode = process.waitFor();

@@ -1,0 +1,9 @@
+@font-face {
+    font-family: "RobotoSlab";
+    src: url("font/RobotoSlab.ttf");
+}
+
+.root {
+    -fx-font-family: "RobotoSlab";
+    -fx-font-size: 15px;
+}
