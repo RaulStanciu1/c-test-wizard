@@ -22,15 +22,22 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -545,12 +552,23 @@ public class MainController{
             return;
         }
         try{
+            Console.setText("");
+            Console.appendText("-----Static Analysis Log-----\n");
             List<String> log = StaticAnalyzer.staticAnalysis(selectedObject);
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Success");
-            alert.setHeaderText("Static Analysis Completed");
-            alert.setContentText(String.join("\n",log));
-            alert.showAndWait();
+            if(log.isEmpty()) {
+                Console.appendText("No issues found\n");
+            }
+            else{
+                for(String line : log){
+                    Console.appendText(line+"\n");
+                }
+            }
+            Console.appendText("-----End of Static Analysis Log-----\n");
+            Alert information = new Alert(Alert.AlertType.INFORMATION);
+            information.setTitle("Static Analysis");
+            information.setHeaderText("Static Analysis Completed");
+            information.setContentText("Check the console for log information");
+            information.showAndWait();
         }catch(Exception e){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
@@ -576,6 +594,21 @@ public class MainController{
             return;
         }
         selectedObject.setEpilogueCode(EpilogueCode.getText());
+    }
+
+    @FXML
+    public void openProjectRepo(){
+        try{
+            if(Desktop.isDesktopSupported()){
+                Desktop.getDesktop().browse(URI.create("https://github.com/RaulStanciu1/c-test-wizard"));
+            }
+        }catch(Exception e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Could not open the Software repository");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
+        }
     }
 
 

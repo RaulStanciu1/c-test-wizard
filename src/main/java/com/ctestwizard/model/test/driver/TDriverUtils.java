@@ -41,6 +41,19 @@ public class TDriverUtils {
         if(!testHeaderFile.createNewFile()){
             throw new Exception("Failed to create test header file");
         }
+        String testHeaderFileContent = """
+                /*
+                        CTestWizard Test Header File
+                The purpose of this file is to add user code
+                    and further decoupling from the unit
+                */
+                """ +
+                "#ifndef CTW_TEST_HEADER_H\n" +
+                "#define CTW_TEST_HEADER_H\n" +
+                "#define _STDIO_H\n" +
+                "#define _STDLIB_H\n" +
+                "#endif\n";
+        FileUtils.writeStringToFile(testHeaderFile, testHeaderFileContent,"UTF-8",false);
     }
 
     public static void generatePrologueEpilogueFile(TObject testObject, TProject parent) throws Exception{
@@ -126,6 +139,7 @@ public class TDriverUtils {
                 #include "ctw_cov.c"
                 #include "ctw_src_pre_cov.c"
                 #include "ctw_stubs.c"
+                #include "ctw_prolog_epilogue.c"
                 #include "ctw_test_data.c"
 
 
@@ -414,38 +428,67 @@ public class TDriverUtils {
         File coverageDiagramFile = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "cov_diagram.txt");
         File coverageResultsFile = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "cov_results.txt");
         File coverageSrcPreFile = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "ctw_src_pre_cov.c");
+        File prologueEpilogueFile = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "ctw_prolog_epilogue.c");
+        RuntimeException exception = new RuntimeException("Failed to cleanup files");
+        if(prologueEpilogueFile.exists()){
+            if(!prologueEpilogueFile.delete()){
+                throw exception;
+            }
+        }
         if(coverageFile.exists()){
-            coverageFile.delete();
+            if(!coverageFile.delete()){
+                throw exception;
+            }
         }
         if(coverageDiagramFile.exists()){
-            coverageDiagramFile.delete();
+            if(!coverageDiagramFile.delete()){
+                throw exception;
+            }
         }
         if(coverageResultsFile.exists()){
-            coverageResultsFile.delete();
+            if(!coverageResultsFile.delete()){
+                throw exception;
+            }
         }
         if(coverageSrcPreFile.exists()){
-            coverageSrcPreFile.delete();
+            if(!coverageSrcPreFile.delete()){
+                throw exception;
+            }
         }
         if(testDefinesFile.exists()){
-            testDefinesFile.delete();
+            if(!testDefinesFile.delete()){
+                throw exception;
+            }
         }
         if(testDriverExecutable.exists()){
-            testDriverExecutable.delete();
+            if(!testDriverExecutable.delete()){
+                throw exception;
+            }
         }
         if(testDriverFile.exists()){
-            testDriverFile.delete();
+            if(!testDriverFile.delete()){
+                throw exception;
+            }
         }
         if(testStepsFile.exists()){
-            testStepsFile.delete();
+            if(!testStepsFile.delete()){
+                throw exception;
+            }
         }
         if(testDataFile.exists()){
-            testDataFile.delete();
+            if(!testDataFile.delete()){
+                throw exception;
+            }
         }
         if(stubCodeFile.exists()){
-            stubCodeFile.delete();
+            if(!stubCodeFile.delete()){
+                throw exception;
+            }
         }
         if(testDataOutputFile.exists()){
-            testDataOutputFile.delete();
+            if(!testDataOutputFile.delete()){
+                throw exception;
+            }
         }
     }
 }

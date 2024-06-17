@@ -12,6 +12,7 @@ module com.ctestwizard {
     requires org.antlr.antlr4.runtime;
     requires org.apache.commons.io;
     requires itextpdf;
+    requires java.desktop;
 
     opens com.ctestwizard to javafx.fxml;
     exports com.ctestwizard;
