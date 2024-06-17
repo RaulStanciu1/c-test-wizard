@@ -24,7 +24,9 @@ public class ReportGenerator {
         String reportPath = project.getTestDriver().getProjectPath() + File.separator + selectedObject.getTestFunction().getName() + "_report.pdf";
         File reportFile = new File(reportPath);
         if (reportFile.exists()) {
-            reportFile.delete();
+           if(!reportFile.delete()){
+                throw new Exception("Report file could not be deleted");
+           }
         }
         PdfWriter.getInstance(document, new FileOutputStream(reportPath));
         document.open();
@@ -33,47 +35,40 @@ public class ReportGenerator {
         document.addCreator("CTestWizard");
         document.addCreationDate();
         Paragraph title = new Paragraph("Test Execution Report: "+selectedObject.getTestFunction().getName());
-        title.setFont(new Font(Font.FontFamily.HELVETICA, 30, Font.BOLD));
+        title.setFont(new Font(Font.FontFamily.HELVETICA, 50, Font.BOLD));
         title.setAlignment(Paragraph.ALIGN_CENTER);
         title.setPaddingTop(10);
         document.add(title);
         document.add(new Paragraph(" "));
-        document.add(new Paragraph(" "));
         Paragraph resultsVerdict = new Paragraph("Tests Status: " + (summary.getResultsPassed() ? "Passed" : "Failed"));
         resultsVerdict.setFont(new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
+        resultsVerdict.setAlignment(Paragraph.ALIGN_CENTER);
         document.add(resultsVerdict);
         if(summary.getCoveragePassed() != -1){
             Paragraph coverageVerdict = new Paragraph("Coverage Status: " + (summary.getCoveragePassed() == 1 ? "Passed" : "Failed"));
             coverageVerdict.setFont(new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
+            coverageVerdict.setAlignment(Paragraph.ALIGN_CENTER);
             document.add(coverageVerdict);
         }
         document.add(new Paragraph(" "));
-        document.add(new Paragraph(" "));
-        Paragraph totalTestCases = new Paragraph("Total Test Cases: " + summary.getTotalTestCases());
-        totalTestCases.setFont(new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
-        document.add(totalTestCases);
 
-        Paragraph totalTestSteps = new Paragraph("Total Test Steps: " + summary.getTotalTestSteps());
-        totalTestSteps.setFont(new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
-        document.add(totalTestSteps);
+        PdfPTable table = new PdfPTable(2);
+        addTableHeaderOverview(table);
+        table.addCell("Total Test Cases");
+        table.addCell(summary.getTotalTestCases().toString());
+        table.addCell("Total Test Steps");
+        table.addCell(summary.getTotalTestSteps().toString());
+        table.addCell("Passed Test Steps");
+        table.addCell(summary.getPassedTestSteps().toString());
+        document.add(table);
 
-        Paragraph passedTestSteps = new Paragraph("Passed Test Steps: " + summary.getPassedTestSteps());
-        passedTestSteps.setFont(new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
-        document.add(passedTestSteps);
-
-        document.newPage();
 
         for(int i = 0; i < summary.getTestResults().size(); i++){
             TResults testResult = summary.getTestResults().get(i);
-            Paragraph testCaseTitle = new Paragraph("Test Case #"+(i+1));
+            Paragraph testCaseTitle = new Paragraph("Test Case #"+(i+1)+": "+(testResult.getResultsPassed() ? "Passed" : "Failed"));
             testCaseTitle.setFont(new Font(Font.FontFamily.HELVETICA, 20, Font.BOLD));
+            testCaseTitle.setAlignment(Paragraph.ALIGN_CENTER);
             document.add(testCaseTitle);
-            document.add(new Paragraph(" "));
-            document.add(new Paragraph(" "));
-            Paragraph testCaseResult = new Paragraph("Test Case Result: " + (testResult.getResultsPassed() ? "Passed" : "Failed"));
-            testCaseResult.setFont(new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
-            document.add(testCaseResult);
-            document.add(new Paragraph(" "));
             document.add(new Paragraph(" "));
             for(int j = 0; j < testResult.getTestSteps(); j++){
                 addTestStepToDocument(document, testResult, selectedObject,i,j);
@@ -86,8 +81,8 @@ public class ReportGenerator {
     private static void addTestStepToDocument(Document document, TResults testResult,TObject object, int tCase,int tStep) throws Exception {
         Paragraph testStepTitle = new Paragraph("Test Step #"+(tStep+1));
         testStepTitle.setFont(new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
+        testStepTitle.setAlignment(Paragraph.ALIGN_CENTER);
         document.add(testStepTitle);
-        document.add(new Paragraph(" "));
         document.add(new Paragraph(" "));
 
         PdfPTable table = new PdfPTable(3);
@@ -99,6 +94,17 @@ public class ReportGenerator {
 
     private static void addTableHeader(PdfPTable table) {
         Stream.of("Element", "Actual Value", "Status")
+                .forEach(columnTitle -> {
+                    PdfPCell header = new PdfPCell();
+                    header.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                    header.setBorderWidth(2);
+                    header.setPhrase(new Phrase(columnTitle));
+                    table.addCell(header);
+                });
+    }
+
+    private static void addTableHeaderOverview(PdfPTable table) {
+        Stream.of("Property","Value")
                 .forEach(columnTitle -> {
                     PdfPCell header = new PdfPCell();
                     header.setBackgroundColor(BaseColor.LIGHT_GRAY);

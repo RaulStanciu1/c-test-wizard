@@ -47,6 +47,7 @@ public class TestExecutionSettingsController {
         setupLinkerList();
         setupIncludeList();
         CodeCoverageEnabled.setSelected(project.getTestDriver().isCoverageEnabled());
+        CreateReport.setSelected(project.getTestDriver().isReportEnabled());
     }
 
     private void setupPropertyTable(){
