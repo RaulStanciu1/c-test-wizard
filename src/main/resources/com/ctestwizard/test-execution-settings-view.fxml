@@ -27,6 +27,20 @@
             </VBox>
          </content>
       </Tab>
+      <Tab text="Object">
+         <content>
+            <VBox prefHeight="200.0" prefWidth="100.0" spacing="20.0">
+               <children>
+                  <ListView fx:id="ObjectList" />
+                  <HBox alignment="CENTER" spacing="50.0">
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#addObject" text="Add Object File" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </content>
+      </Tab>
       <Tab text="Linker">
          <content>
             <VBox prefHeight="200.0" prefWidth="100.0" spacing="20.0">

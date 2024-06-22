@@ -38,6 +38,8 @@ public class CreateProjectController {
     private ListView<String> Linker;
     @FXML
     private TextField AdditionalFlags;
+    @FXML
+    private ListView<String> ObjectFiles;
 
     public void setup(Stage stage,ProjectListController parentController){
         this.stage = stage;
@@ -57,6 +59,12 @@ public class CreateProjectController {
         ContextMenu contextMenuLinker = new ContextMenu();
         contextMenuLinker.getItems().addAll(removeLinker);
         Linker.setContextMenu(contextMenuLinker);
+
+        ContextMenu contextMenuObjectFiles = new ContextMenu();
+        MenuItem removeObjectFile = new MenuItem("Remove Object File");
+        removeObjectFile.setOnAction(event -> removeSelectedObjectFile());
+        contextMenuObjectFiles.getItems().addAll(removeObjectFile);
+        ObjectFiles.setContextMenu(contextMenuObjectFiles);
 
     }
 
@@ -98,6 +106,11 @@ public class CreateProjectController {
             String outputFlag = OutputFlag.getText();
             String includeFlag = IncludeFlag.getText();
             String linkerFlag = LinkerFlag.getText();
+
+            List<String> objectFiles = ObjectFiles.getItems().stream().toList();
+            List<String> objectFilesMut = new ArrayList<>(objectFiles.size());
+            objectFilesMut.addAll(objectFiles);
+
             List<String> includeDirectories = IncludeDirectories.getItems().stream().toList();
             List<String> includeDirectoriesMut = new ArrayList<>(includeDirectories.size());
             includeDirectoriesMut.addAll(includeDirectories);
@@ -113,7 +126,7 @@ public class CreateProjectController {
                 alert.showAndWait();
                 return;
             }
-            TCompiler compiler = new TCompiler(compilerCommand,preprocessFlag,compileFlag,outputFlag,includeFlag,linkerFlag,includeDirectoriesMut,linkerFilesMut,AdditionalFlags.getText());
+            TCompiler compiler = new TCompiler(compilerCommand,preprocessFlag,compileFlag,outputFlag,includeFlag,linkerFlag,objectFilesMut,includeDirectoriesMut,linkerFilesMut,AdditionalFlags.getText());
             TProject project = TProject.newTProject(projectName,sourceFilePath,projectPath,compiler);
             TProject.archiveProject(project);
             parentController.addProject(projectPath + File.separator + projectName + ".ctw");
@@ -165,5 +178,24 @@ public class CreateProjectController {
             return;
         }
         Linker.getItems().remove(selectedLinker);
+    }
+
+    @FXML
+    public void addObjectFile(){
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Object File");
+        dialog.setHeaderText("Enter the Object File");
+        dialog.setContentText("Object File:");
+        dialog.showAndWait().ifPresent(objectFile -> {
+            ObjectFiles.getItems().add(objectFile);
+        });
+    }
+
+    public void removeSelectedObjectFile(){
+        String selectedObjectFile = ObjectFiles.getSelectionModel().getSelectedItem();
+        if(selectedObjectFile == null){
+            return;
+        }
+        ObjectFiles.getItems().remove(selectedObjectFile);
     }
 }

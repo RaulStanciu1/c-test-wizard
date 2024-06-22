@@ -50,8 +50,6 @@ public class TDriverUtils {
                 """ +
                 "#ifndef CTW_TEST_HEADER_H\n" +
                 "#define CTW_TEST_HEADER_H\n" +
-                "#define _STDIO_H\n" +
-                "#define _STDLIB_H\n" +
                 "#endif\n";
         FileUtils.writeStringToFile(testHeaderFile, testHeaderFileContent,"UTF-8",false);
     }
@@ -275,6 +273,9 @@ public class TDriverUtils {
         //Compile the test driver file using the given compiler
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command(driver.getCompiler(), "ctw/ctw_test_driver.c");
+        for(String objectFile:driver.getObjectFiles()){
+            processBuilder.command().add(objectFile);
+        }
         //Add the include directories and the linker to the compiler command
         for (String includeDirectory : driver.getIncludeDirectories()) {
             processBuilder.command().add("-I");
@@ -360,7 +361,9 @@ public class TDriverUtils {
 
     private static void _handleGlobalOutput(TResults result, int step, String elementName, String elementValue, boolean match) throws Exception {
         for (CElement global : result.getGlobalOutputs()){
-            __handleElement(global,step,elementName,elementValue,match);
+            if(global.getName().equals(elementName)){
+                __handleElement(global, step, elementName, elementValue, match);
+            }
         }
     }
 

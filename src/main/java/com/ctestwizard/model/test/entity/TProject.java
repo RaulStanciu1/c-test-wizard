@@ -72,19 +72,13 @@ public class TProject implements Serializable {
         //Preprocess the source file copy and save it
         ProcessBuilder processBuilder = new ProcessBuilder(compiler.getCompiler());
         processBuilder.command().add(compiler.getPreprocessFlag());
-        processBuilder.command().add(sourceFileCopy.getAbsolutePath());
+        processBuilder.command().add(sourceFile.getAbsolutePath());
         processBuilder.directory(workingDir);
         processBuilder.command().add(compiler.getOutputFlag());
-        processBuilder.command().add("ctw_src_pre.c");
+        processBuilder.command().add(workingDir.getAbsolutePath() + File.separator+"ctw_src_pre.c");
         for(String includeDirectory : compiler.getIncludeDirectories()){
-            processBuilder.command().add(compiler.getIncludeFlag()+includeDirectory);
+            processBuilder.command().add(compiler.getIncludeFlag());
             processBuilder.command().add(includeDirectory);
-        }
-        for(String linkerFile : compiler.getLinkerFiles()){
-            processBuilder.command().add(compiler.getLinkerFlag()+linkerFile);
-        }
-        if(compiler.getAdditionalFlags() != null && !compiler.getAdditionalFlags().isEmpty()){
-            processBuilder.command().add(compiler.getAdditionalFlags());
         }
         Process process = processBuilder.start();
         int exitCode = process.waitFor();
@@ -92,7 +86,7 @@ public class TProject implements Serializable {
             throw new Exception("Preprocessing failed");
         }
 
-        CParserDetector parser = new CParserDetector(sourceFilePath);
+        CParserDetector parser = new CParserDetector(workingDir.getAbsolutePath() + File.separator+"ctw_src_pre.c");
         parser.walkParseTree();
         List<TObject> testObjects = new ArrayList<>();
         TProject newTestProject = new TProject(projectName);

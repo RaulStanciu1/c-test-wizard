@@ -124,9 +124,6 @@ public class TDriver implements Serializable {
             for(String includeDir : compiler.getIncludeDirectories()){
                 processBuilder.command().add(compiler.getIncludeFlag()+includeDir);
             }
-            for(String linkerFile : compiler.getLinkerFiles()){
-                processBuilder.command().add(compiler.getLinkerFlag()+linkerFile);
-            }
             processBuilder.directory(projectDir);
             processBuilder.command().add(compiler.getOutputFlag());
             processBuilder.command().add("ctw_src_pre.c");
@@ -429,5 +426,9 @@ public class TDriver implements Serializable {
 
     public void addLinker(String linker){
         compiler.getLinkerFiles().add(linker);
+    }
+
+    public List<String> getObjectFiles(){
+        return compiler.getObjectFiles();
     }
 }

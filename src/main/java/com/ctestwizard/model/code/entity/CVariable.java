@@ -14,6 +14,16 @@ public class CVariable implements CElement, Serializable {
     public List<CValue> values;
 
     public CVariable(String type, String name){
+        switch (type) {
+            case "unsignedshort" -> type = "unsigned short";
+            case "unsignedint" -> type = "unsigned int";
+            case "unsignedlong" -> type = "unsigned long";
+            case "unsignedchar" -> type = "unsigned char";
+            case "signedshort" -> type = "signed short";
+            case "signedint" -> type = "signed int";
+            case "signedlong" -> type = "signed long";
+            case "signedchar" -> type = "signed char";
+        }
         this.type = type;
         this.pointers = (int) name.chars().filter(c -> c == '*').count();
         this.name = name.chars()

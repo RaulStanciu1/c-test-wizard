@@ -67,20 +67,20 @@ public class StaticAnalyzer {
     private static void checkMissingValues(CElement element,List<CValue> valueList, List<String> log, int tCaseId, int tStep, String severity, boolean valueNeeded){
         CValue value = valueList.get(tStep);
         if(value.value.isEmpty()){
-            log.add("SEVERITY "+severity+" - Missing value for element: "+element.getName()+" in test case: "+tCaseId+" step: "+tStep+1);
+            log.add("SEVERITY "+severity+" - Missing value for element: "+element.getName()+" in test case: "+tCaseId+" step: "+(tStep+1));
         }else if(valueNeeded && value.value.equals("*none*")){
-            log.add("SEVERITY "+severity+" - Missing value for element: "+element.getName()+" in test case: "+tCaseId+" step: "+tStep+1);
+            log.add("SEVERITY "+severity+" - Missing value for element: "+element.getName()+" in test case: "+tCaseId+" step: "+(tStep+1));
         }
     }
 
     private static void checkMissingValuesEnum(CEnumInstance enumInstance, List<CValue> valueList, List<String> log, int tCaseId, int tStep, String severity, boolean valueNeeded){
         CValue value = valueList.get(tStep);
         if(value.value.isEmpty()){
-            log.add("SEVERITY "+ severity + " - Missing value for element: "+enumInstance.getName()+" in test case: "+tCaseId+" step: "+tStep+1);
+            log.add("SEVERITY "+ severity + " - Missing value for element: "+enumInstance.getName()+" in test case: "+tCaseId+" step: "+(tStep+1));
         }else if(valueNeeded && value.value.equals("*none*")){
-            log.add("SEVERITY " + severity + " - Missing value for element: "+enumInstance.getName()+" in test case: "+tCaseId+" step: "+tStep+1);
+            log.add("SEVERITY " + severity + " - Missing value for element: "+enumInstance.getName()+" in test case: "+tCaseId+" step: "+(tStep+1));
         }else if(!enumInstance.getEnumType().getMembers().contains(value.value)){
-            log.add("SEVERITY " + severity + " - Invalid value for element: "+enumInstance.getName()+" in test case: "+tCaseId+" step: "+tStep+1);
+            log.add("SEVERITY " + severity + " - Invalid value for element: "+enumInstance.getName()+" in test case: "+tCaseId+" step: "+(tStep+1));
         }
     }
 }

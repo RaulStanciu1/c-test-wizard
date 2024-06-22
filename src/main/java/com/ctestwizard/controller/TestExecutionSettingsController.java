@@ -33,6 +33,8 @@ public class TestExecutionSettingsController {
     private CheckBox CodeCoverageEnabled;
     @FXML
     private CheckBox CreateReport;
+    @FXML
+    private ListView<String> ObjectList;
     private TProject project;
     private Stage parentStage;
 
@@ -44,6 +46,7 @@ public class TestExecutionSettingsController {
     public void init(){
         setupPropertyTable();
         setupDefinesList();
+        setupObjectList();
         setupLinkerList();
         setupIncludeList();
         CodeCoverageEnabled.setSelected(project.getTestDriver().isCoverageEnabled());
@@ -93,6 +96,16 @@ public class TestExecutionSettingsController {
         removeItem.setOnAction(event -> removeSelectedDefine());
         contextMenu.getItems().add(removeItem);
         DefinesList.setContextMenu(contextMenu);
+    }
+
+    private void setupObjectList(){
+        ObjectList.getItems().clear();
+        project.getTestDriver().getObjectFiles().forEach(object -> ObjectList.getItems().add(object));
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem removeItem = new MenuItem("Remove Object File");
+        removeItem.setOnAction(event -> removeSelectedObject());
+        contextMenu.getItems().add(removeItem);
+        ObjectList.setContextMenu(contextMenu);
     }
 
     private void setupLinkerList(){
@@ -238,6 +251,28 @@ public class TestExecutionSettingsController {
         }
         project.getTestDriver().getIncludeDirectories().remove(selectedDirectory);
         IncludeList.getItems().remove(selectedDirectory);
+    }
+
+    @FXML
+    public void addObject(){
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Object File");
+        dialog.setHeaderText("Enter the Object File");
+        dialog.setContentText("Object File:");
+        dialog.showAndWait().ifPresent(objectFile -> {
+            project.getTestDriver().getObjectFiles().add(objectFile);
+            ObjectList.getItems().add(objectFile);
+        });
+    }
+
+    @FXML
+    public void removeSelectedObject(){
+        String selectedObject = ObjectList.getSelectionModel().getSelectedItem();
+        if(selectedObject == null){
+            return;
+        }
+        project.getTestDriver().getObjectFiles().remove(selectedObject);
+        ObjectList.getItems().remove(selectedObject);
     }
 
     public void updateDefines(CDefine define){

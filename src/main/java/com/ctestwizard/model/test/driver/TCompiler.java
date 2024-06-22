@@ -10,10 +10,12 @@ public class TCompiler implements Serializable {
     private String outputFlag;
     private String linkerFlag;
     private String includeFlag;
+    private final List<String> objectFiles;
     private List<String> includeDirectories;
     private List<String> linkerFiles;
     private String additionalFlags;
-    public TCompiler(String compiler, String preprocessFlag, String compileFlag, String outputFlag, String linkerFlag, String includeFlag, List<String> includeDirectories, List<String> linkerFiles, String additionalFlags){
+    public TCompiler(String compiler, String preprocessFlag, String compileFlag, String outputFlag, String linkerFlag, String includeFlag, List<String> objectFiles
+            ,List<String> includeDirectories, List<String> linkerFiles, String additionalFlags){
         this.compiler = compiler;
         this.preprocessFlag = preprocessFlag;
         this.compileFlag = compileFlag;
@@ -23,6 +25,7 @@ public class TCompiler implements Serializable {
         this.includeDirectories = includeDirectories;
         this.linkerFiles = linkerFiles;
         this.additionalFlags = additionalFlags;
+        this.objectFiles = objectFiles;
     }
 
     public String getCompiler() {
@@ -96,4 +99,9 @@ public class TCompiler implements Serializable {
     public void setAdditionalFlags(String additionalFlags) {
         this.additionalFlags = additionalFlags;
     }
+
+public List<String> getObjectFiles() {
+        return objectFiles;
+    }
+
 }

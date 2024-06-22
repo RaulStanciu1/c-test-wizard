@@ -176,6 +176,21 @@
                   </VBox>
                </content>
           </Tab>
+            <Tab text="Object">
+               <content>
+                  <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <ButtonBar prefHeight="40.0" prefWidth="200.0">
+                           <buttons>
+                              <Button mnemonicParsing="false" onAction="#addObjectFile" text="Add" />
+                           </buttons>
+                        </ButtonBar>
+                        <Label text="Object Files:" />
+                        <ListView fx:id="ObjectFiles" prefHeight="200.0" prefWidth="200.0" />
+                     </children>
+                  </VBox>
+               </content>
+            </Tab>
             <Tab text="Include">
                <content>
                   <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0">

@@ -129,21 +129,16 @@ public class TableFactory {
         ContextMenu ctxMenu = new ContextMenu();
         MenuItem createStub = new MenuItem("Create Stub");
         MenuItem dontCreateStub = new MenuItem("Don't Create Stub");
-        dontCreateStub.setDisable(true);
         createStub.setOnAction(event -> {
             CFunction function = (CFunction) functionsTable.getSelectionModel().getSelectedItem();
             tInterface.getStubCode().put(function,"");
             tableUpdater.updateStubCode(tInterface);
-            createStub.setDisable(true);
-            dontCreateStub.setDisable(false);
         });
 
         dontCreateStub.setOnAction(event -> {
             CFunction function = (CFunction) functionsTable.getSelectionModel().getSelectedItem();
             tInterface.getStubCode().remove(function);
             tableUpdater.updateStubCode(tInterface);
-            createStub.setDisable(false);
-            dontCreateStub.setDisable(true);
         });
 
         ctxMenu.getItems().addAll(createStub,dontCreateStub);

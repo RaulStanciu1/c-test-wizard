@@ -13,18 +13,18 @@ public class TWriter {
             String parameterName = "__CTW__PARAM__"+index;
             index++;
             if(parameter instanceof CVariable && !((CVariable)parameter).values.get(j).value.isEmpty() && !((CVariable)parameter).values.get(j).value.equals("*none*")){
-                sb.append(parameter.getType()).append("*".repeat(((CVariable) parameter).getPointers())).append(" ");
+                sb.append(parameter.getType()).append("*".repeat(((CVariable) parameter).getPointers() - 1)).append(" ");
                 sb.append(parameterName).append(" = ");
                 sb.append(((CVariable) parameter).values.get(j).value).append(";\n");
             }else if(parameter instanceof CEnumInstance && !((CEnumInstance)parameter).values.get(j).value.isEmpty() && !((CEnumInstance)parameter).values.get(j).value.equals("*none*")){
-                sb.append(parameter.getType()).append("*".repeat(((CEnumInstance) parameter).getPointers())).append(" ");
+                sb.append(parameter.getType()).append("*".repeat(((CEnumInstance) parameter).getPointers() - 1)).append(" ");
                 sb.append(parameterName).append(" = ");
                 sb.append(((CEnumInstance) parameter).values.get(j).value).append(";\n");
             } else if(parameter instanceof CStructOrUnionInstance structOrUnionInstance){
                 if(structOrUnionInstance.getPointers() == 0){
                     sb.append(_addStructOrUnionInstance(parameter.getType()+" "+parameterName+".",structOrUnionInstance, j));
                 }else if(!structOrUnionInstance.values.get(j).value.isEmpty() && !structOrUnionInstance.values.get(j).value.equals("*none*")){
-                    sb.append(structOrUnionInstance.getType()).append("*".repeat(structOrUnionInstance.getPointers())).append(" ");
+                    sb.append(structOrUnionInstance.getType()).append("*".repeat(structOrUnionInstance.getPointers() - 1)).append(" ");
                     sb.append(parameterName).append(" = ");
                     sb.append(structOrUnionInstance.values.get(j).value).append(";\n");
                 }
