@@ -11,6 +11,9 @@ import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller for the user global form dialog
+ */
 public class UserGlobalFormController {
     private TProject project;
     private List<String> globalNames;
@@ -60,6 +63,13 @@ public class UserGlobalFormController {
     @FXML
     private RadioButton ThreeDArrayBtn;
 
+    /**
+     * Set up the controller
+     * @param testObject The test object
+     * @param project The project
+     * @param stage The stage
+     * @param parentController The parent controller
+     */
     public void setup(TObject testObject, TProject project, Stage stage, MainController parentController){
         this.parentController = parentController;
         this.project = project;
@@ -73,30 +83,49 @@ public class UserGlobalFormController {
             globalNames.add(userGlobal.getName());
         }
     }
+
+    /**
+     * Initialize the controller
+     */
     public void init(){
         setTypeTreeView();
     }
 
+    /**
+     * Method used to select the no array option
+     */
     @FXML
     public void selectNoArray(){
         disableAllArrayProperties();
     }
 
+    /**
+     * Method used to select de 1d array option
+     */
     @FXML
     public void select1DArray(){
         enable1DArrayProperties();
     }
 
+    /**
+     * Method used to select the 2d array option
+     */
     @FXML
     public void select2DArray(){
         enable2DArrayProperties();
     }
 
+    /**
+     * Method used to select the 3d array option
+     */
     @FXML
     public void select3DArray(){
         enable3DArrayProperties();
     }
 
+    /**
+     * Method used to validate and create a user global
+     */
     @FXML
     public void createUserGlobal(){
         try{
@@ -133,6 +162,9 @@ public class UserGlobalFormController {
         }
     }
 
+    /**
+     * Private method to validate the 3d array properties
+     */
     private void check3DArrayProperties(){
         if(ThreeD_OneDSize.getText().isEmpty() || ThreeD_TwoDSize.getText().isEmpty() || ThreeD_ThreeDSize.getText().isEmpty()){
             throw new IllegalArgumentException("Size cannot be empty");
@@ -142,6 +174,13 @@ public class UserGlobalFormController {
         }
     }
 
+    /**
+     * Private method to create a 3d array
+     * @param name The name of the array
+     * @param type The type of the array
+     * @param pointers The number of pointers
+     * @return The 3d array
+     */
     private CElement create3DArray(String name, String type, int pointers){
         int size1;
         int size2;
@@ -161,6 +200,9 @@ public class UserGlobalFormController {
         return new CArray(variable);
     }
 
+    /**
+     * Private method to validate the properties of a 2d array
+     */
     private void check2DArrayProperties(){
         if(TwoD_OneDSize.getText().isEmpty() || TwoD_TwoDSize.getText().isEmpty()){
             throw new IllegalArgumentException("Size cannot be empty");
@@ -170,6 +212,13 @@ public class UserGlobalFormController {
         }
     }
 
+    /**
+     * Private method to create a 2d array
+     * @param name The name of the array
+     * @param type The type of the array
+     * @param pointers The number of pointers
+     * @return The 2d array
+     */
     private CElement create2DArray(String name, String type, int pointers){
         int size1;
         int size2;
@@ -187,6 +236,9 @@ public class UserGlobalFormController {
         return new CArray(variable);
     }
 
+    /**
+     * Private method to validate the properties of a 1d array
+     */
     private void check1DArrayProperties(){
         if(OneD_OneDSize.getText().isEmpty()){
             throw new IllegalArgumentException("Size cannot be empty");
@@ -196,6 +248,13 @@ public class UserGlobalFormController {
         }
     }
 
+    /**
+     * Private method to create a 1d array
+     * @param name The name of the array
+     * @param type The type of the array
+     * @param pointers The number of pointers
+     * @return The 1d array
+     */
     private CElement create1DArray(String name, String type, int pointers){
         int size;
         try{
@@ -211,6 +270,13 @@ public class UserGlobalFormController {
         return new CArray(variable);
     }
 
+    /**
+     * Private method to create a variable
+     * @param name The name of the variable
+     * @param type The type of the variable
+     * @param pointers The number of pointers
+     * @return The variable
+     */
     private CElement createVariable(String name, String type, int pointers){
         //Check if the variable type is a struct or enum
         for(int i = 0; i < project.getStructOrUnionTypes().size(); i++){
@@ -228,6 +294,10 @@ public class UserGlobalFormController {
         return new CVariable(type,name,pointers);
     }
 
+    /**
+     * Private method to get the number of pointers
+     * @return The number of pointers
+     */
     private int getPointers(){
         if(VariableBtn.isSelected()){
             return 0;
@@ -241,6 +311,9 @@ public class UserGlobalFormController {
         throw new IllegalArgumentException("Please select a pointer type");
     }
 
+    /**
+     * Private method to validate the type
+     */
     private void checkTypeValidity(){
         if(TypeTreeView.getSelectionModel().getSelectedItem() == null){
             throw new IllegalArgumentException("Please select a type");
@@ -251,6 +324,9 @@ public class UserGlobalFormController {
         }
     }
 
+    /**
+     * Private method to validate the name
+     */
     private void checkNameValidity(){
         String name = NameTextField.getText();
         if(name.isEmpty()){
@@ -264,6 +340,9 @@ public class UserGlobalFormController {
         }
     }
 
+    /**
+     * Private method to disable all array properties
+     */
     private void disableAllArrayProperties(){
         OneD_OneDSize_Label.setDisable(true);
         OneD_OneDSize.setDisable(true);
@@ -278,6 +357,9 @@ public class UserGlobalFormController {
         ThreeD_ThreeDSize_Label.setDisable(true);
     }
 
+    /**
+     * Private method to enable 1d array properties
+     */
     private void enable1DArrayProperties(){
         OneD_OneDSize_Label.setDisable(false);
         OneD_OneDSize.setDisable(false);
@@ -292,6 +374,9 @@ public class UserGlobalFormController {
         ThreeD_ThreeDSize_Label.setDisable(true);
     }
 
+    /**
+     * Private method to enable 2d array properties
+     */
     private void enable2DArrayProperties(){
         OneD_OneDSize_Label.setDisable(true);
         OneD_OneDSize.setDisable(true);
@@ -306,6 +391,9 @@ public class UserGlobalFormController {
         ThreeD_ThreeDSize_Label.setDisable(true);
     }
 
+    /**
+     * Private method to enable 3d array properties
+     */
     private void enable3DArrayProperties(){
         OneD_OneDSize_Label.setDisable(true);
         OneD_OneDSize.setDisable(true);
@@ -321,6 +409,9 @@ public class UserGlobalFormController {
         ThreeD_ThreeDSize.setDisable(false);
     }
 
+    /**
+     * Private method to set up the tree view with the project types
+     */
     private void setTypeTreeView(){
         TreeItem<String> root = new TreeItem<>("Types");
         TreeItem<String> basicType = new TreeItem<>("Basic Types");

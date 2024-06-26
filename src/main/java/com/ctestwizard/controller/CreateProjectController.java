@@ -11,6 +11,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller for the create project dialog
+ */
 public class CreateProjectController {
     private ProjectListController parentController;
     private Stage stage;
@@ -41,10 +44,19 @@ public class CreateProjectController {
     @FXML
     private ListView<String> ObjectFiles;
 
+    /**
+     * Set up the controller
+     * @param stage The stage
+     * @param parentController The parent controller
+     */
     public void setup(Stage stage,ProjectListController parentController){
         this.stage = stage;
         this.parentController = parentController;
     }
+
+    /**
+     * Initialize the controller
+     */
     public void init() {
         IncludeDirectories.getItems().clear();
         Linker.getItems().clear();
@@ -68,6 +80,9 @@ public class CreateProjectController {
 
     }
 
+    /**
+     * Method used to select the source file
+     */
     @FXML
     public void selectSourceFile(){
         FileChooser fileChooser = new FileChooser();
@@ -80,6 +95,9 @@ public class CreateProjectController {
         }
     }
 
+    /**
+     * Method used to select the project directory
+     */
     @FXML
     public void selectProjectDirectory(){
         FileChooser fileChooser = new FileChooser();
@@ -93,7 +111,9 @@ public class CreateProjectController {
         }
     }
 
-
+    /**
+     * Method used to create a project
+     */
     @FXML
     public void createProject() {
         try {
@@ -140,6 +160,9 @@ public class CreateProjectController {
         }
     }
 
+    /**
+     * Method used to add an include directory
+     */
     @FXML
     public void addIncludeDirectory(){
         TextInputDialog dialog = new TextInputDialog();
@@ -151,6 +174,9 @@ public class CreateProjectController {
         });
     }
 
+    /**
+     * Method used to remove the selected include directory
+     */
     @FXML
     public void removeSelectedDirectory(){
         String selectedDirectory = IncludeDirectories.getSelectionModel().getSelectedItem();
@@ -160,6 +186,9 @@ public class CreateProjectController {
         IncludeDirectories.getItems().remove(selectedDirectory);
     }
 
+    /**
+     * Method used to add a linker file
+     */
     @FXML
     public void addLinker(){
         TextInputDialog dialog = new TextInputDialog();
@@ -171,6 +200,9 @@ public class CreateProjectController {
         });
     }
 
+    /**
+     * Method used to remove the selected linker file
+     */
     @FXML
     public void removeSelectedLinker(){
         String selectedLinker = Linker.getSelectionModel().getSelectedItem();
@@ -180,6 +212,9 @@ public class CreateProjectController {
         Linker.getItems().remove(selectedLinker);
     }
 
+    /**
+     * Method used to add an object file
+     */
     @FXML
     public void addObjectFile(){
         TextInputDialog dialog = new TextInputDialog();
@@ -191,6 +226,9 @@ public class CreateProjectController {
         });
     }
 
+    /**
+     * Method used to remove the selected object file
+     */
     public void removeSelectedObjectFile(){
         String selectedObjectFile = ObjectFiles.getSelectionModel().getSelectedItem();
         if(selectedObjectFile == null){

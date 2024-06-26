@@ -11,6 +11,11 @@ import javafx.stage.Stage;
 import java.util.Objects;
 
 public class MainApplication extends Application {
+    /**
+     * Start the application
+     * @param stage The project list stage
+     * @throws Exception If the fxml file is not found
+     */
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("project-list.fxml"));
@@ -25,6 +30,10 @@ public class MainApplication extends Application {
         stage.show();
     }
 
+    /**
+     * Starting Point of the application
+     * @param args Command line arguments
+     */
     public static void main(String[] args) {
         launch();
     }

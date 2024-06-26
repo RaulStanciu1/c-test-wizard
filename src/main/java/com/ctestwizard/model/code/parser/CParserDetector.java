@@ -13,15 +13,26 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Class used to detect the elements in a C source file
+ */
 public class CParserDetector implements Cloneable {
     private CListenerDetector listener;
     private String filePath;
 
+    /**
+     * Constructor for the detector
+     * @param filePath The path to the source file
+     */
     public CParserDetector(String filePath){
         this.listener = new CListenerDetector();
         this.filePath = filePath;
     }
 
+    /**
+     * Method that walks the parse tree and detects the elements in the source file
+     * @throws IOException If the source file could not be read
+     */
     public void walkParseTree() throws IOException{
         CharStream input = CharStreams.fromFileName(filePath);
         CLexer lexer = new CLexer(input);
@@ -35,6 +46,10 @@ public class CParserDetector implements Cloneable {
         finalizeData();
     }
 
+    /**
+     * Method that clones the detector
+     * @return The cloned detector
+     */
     public CParserDetector clone(){
         try {
             CParserDetector clone = (CParserDetector) super.clone();
@@ -46,24 +61,49 @@ public class CParserDetector implements Cloneable {
         }
     }
 
+    /**
+     * Method that returns the list of struct and union definitions
+     * @return The list of struct and union definitions
+     */
     public List<CElement> getStructAndUnionDefinitions() {
         return this.listener.getStructOrUnionList();
     }
 
+    /**
+     * Method that returns the list of enum definitions
+     * @return The list of enum definitions
+     */
     public List<CElement> getEnumDefinitions() {
         return this.listener.getEnumList();
     }
+
+    /**
+     * Method that returns the list of local function definitions
+     * @return The list of local function definitions
+     */
     public List<CFunction> getLocalFunctionDefinitions(){
         return this.listener.getLocalFunctions();
     }
 
+    /**
+     * Method that returns the list of external function definitions
+     * @return The list of external function definitions
+     */
     public List<CFunction> getExternalFunctionDefinitions(){
         return this.listener.getExternalFunctions();
     }
+
+    /**
+     * Method that returns the list of global variables
+     * @return The list of global variables
+     */
     public List<CElement> getGlobals(){
         return this.listener.getGlobals();
     }
 
+    /**
+     * Method that does additional post-processing to ensure that the data is correct
+     */
     private void finalizeData(){
         finalizeStructOrUnions();
         finalizeLocalGlobals();
@@ -101,6 +141,9 @@ public class CParserDetector implements Cloneable {
 
     }
 
+    /**
+     * Method that replaces every instance of a struct, union, enum or array in a global variable to its respective object
+     */
     private void finalizeLocalGlobals(){
         int index = 0;
         for(CElement _localGlobal:this.getGlobals()){
@@ -123,6 +166,9 @@ public class CParserDetector implements Cloneable {
         }
     }
 
+    /**
+     * Method that applies the finalization to the external functions
+     */
     private void finalizeExternalFunctions(){
         //Step 1: Remove any external function that's also in the localFunction list
         Iterator<CFunction> iterator = this.getExternalFunctionDefinitions().iterator();
@@ -172,6 +218,9 @@ public class CParserDetector implements Cloneable {
         }
     }
 
+    /**
+     * Method that applies the finalization to the local functions
+     */
     private void finalizeLocalFunctions(){
         int index = 0;
         for(CFunction localFunction : this.getLocalFunctionDefinitions()){

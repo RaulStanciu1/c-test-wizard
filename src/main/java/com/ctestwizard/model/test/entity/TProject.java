@@ -11,12 +11,22 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entity used to store all the user's information about a project
+ */
 public class TProject implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private String name;
     private TDriver testDriver;
     private List<TObject> testObjects;
     private List<CElement> structOrUnionTypes;
     private List<CElement> enumTypes;
+
+    /**
+     * Constructor for the project
+     * @param name The name of the project
+     */
     public TProject(String name) {
         this.name = name;
         this.testObjects = new ArrayList<>();
@@ -24,6 +34,12 @@ public class TProject implements Serializable {
         this.enumTypes = new ArrayList<>();
     }
 
+    /**
+     * Load a project from a .ctw file using deserialization
+     * @param projectPath The path to the project file
+     * @return The project object
+     * @throws Exception If there were issues loading the project
+     */
     public static TProject loadProject(String projectPath) throws Exception{
         //Read the project object from a file
         try(FileInputStream fileIn = new FileInputStream(projectPath);
@@ -34,6 +50,11 @@ public class TProject implements Serializable {
         }
     }
 
+    /**
+     * Archive a project to a .ctw file using serialization
+     * @param project The project to archive
+     * @throws Exception If there were issues archiving the project
+     */
     public static void archiveProject(TProject project) throws Exception{
         //Write the project object to a file
         String projectPath = project.getTestDriver().getProjectPath()+File.separator+project.getName()+".ctw";
@@ -45,6 +66,15 @@ public class TProject implements Serializable {
         }
     }
 
+    /**
+     * Create a new project given the necessary data from the user
+     * @param projectName The name of the project
+     * @param sourceFilePath The path to the source file
+     * @param projectPath The path to the project directory
+     * @param compiler The compiler to use for the project
+     * @return The new project object
+     * @throws Exception If the source file cannot be found, the project directory cannot be created, or preprocessing fails
+     */
     public static TProject newTProject(String projectName,String sourceFilePath, String projectPath, TCompiler compiler) throws Exception {
         File sourceFile = new File(sourceFilePath);
         if (!sourceFile.exists()) {
@@ -85,7 +115,7 @@ public class TProject implements Serializable {
         if (exitCode != 0) {
             throw new Exception("Preprocessing failed");
         }
-
+        //Parse the preprocessed file
         CParserDetector parser = new CParserDetector(workingDir.getAbsolutePath() + File.separator+"ctw_src_pre.c");
         parser.walkParseTree();
         List<TObject> testObjects = new ArrayList<>();
@@ -98,7 +128,7 @@ public class TProject implements Serializable {
         newTestProject.setStructOrUnionTypes(parser.getStructAndUnionDefinitions());
         newTestProject.setEnumTypes(parser.getEnumDefinitions());
         newTestProject.setTestDriver(new TDriver(newTestProject, sourceFilePath, projectPath, compiler));
-
+        //Add the project to the project list
         String projectListFolderPath = System.getProperty("user.home")+File.separator+".ctestwizard";
         String projectListFilePath = projectListFolderPath+File.separator+"ProjectList.lst";
         File projectListFolder = new File(projectListFolderPath);
@@ -119,48 +149,90 @@ public class TProject implements Serializable {
         return newTestProject;
     }
 
-
+    /**
+     * Get the test objects
+     * @return The test objects
+     */
     public List<TObject> getTestObjects() {
         return testObjects;
     }
 
-
+    /**
+     * Set the test objects
+     * @param testObjects The test objects
+     */
     public void setTestObjects(List<TObject> testObjects) {
         this.testObjects = testObjects;
     }
 
+    /**
+     *  Get the struct or union types
+     * @return The struct or union types
+     */
     public List<CElement> getStructOrUnionTypes() {
         return structOrUnionTypes;
     }
 
+    /**
+     *  Set the struct or union types
+     * @param structOrUnionTypes The struct or union types
+     */
     public void setStructOrUnionTypes(List<CElement> structOrUnionTypes) {
         this.structOrUnionTypes = structOrUnionTypes;
     }
 
+    /**
+     * Get the enum types
+     * @return The enum types
+     */
     public List<CElement> getEnumTypes() {
         return enumTypes;
     }
 
+    /**
+     * Set the enum types
+     * @param enumTypes The enum types
+     */
     public void setEnumTypes(List<CElement> enumTypes) {
         this.enumTypes = enumTypes;
     }
 
+    /**
+     * Get the test driver
+     * @return The test driver
+     */
     public TDriver getTestDriver() {
         return testDriver;
     }
 
+    /**
+     * Set the test driver
+     * @param testDriver The test driver
+     */
     public void setTestDriver(TDriver testDriver) {
         this.testDriver = testDriver;
     }
 
+    /**
+     * Get the name of the project
+     * @return The name of the project
+     */
     public String getName(){
         return name;
     }
 
+    /**
+     * Set the name of the project
+     * @param name The name of the project
+     */
     public void setName(String name){
         this.name = name;
     }
 
+    /**
+     * Get the string representation of the project
+     * @return The name of the project
+     */
     public String toString(){
         return name;
     }

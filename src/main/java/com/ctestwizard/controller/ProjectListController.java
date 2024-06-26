@@ -20,15 +20,25 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Controller for the project list view
+ */
 public class ProjectListController {
     private Stage stage;
     @FXML
     private ListView<String> ProjectList;
 
+    /**
+     * Set up the controller
+     * @param stage The stage
+     */
     public void setup(Stage stage){
         this.stage = stage;
     }
 
+    /**
+     * Initialize the controller
+     */
     public void init() {
         String projectListPath = System.getProperty("user.home") + File.separator + ".ctestwizard" + File.separator + "ProjectList.lst";
         File projectListFile = new File(projectListPath);
@@ -54,6 +64,9 @@ public class ProjectListController {
         }
     }
 
+    /**
+     * Method used to open a project
+     */
     public void openProject() {
         try{
             Stage mainStage = new Stage();
@@ -82,6 +95,9 @@ public class ProjectListController {
 
     }
 
+    /**
+     * Method used to delete a project
+     */
     public void deleteProject(){
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
         confirmation.setTitle("Delete Project");
@@ -117,6 +133,9 @@ public class ProjectListController {
         }
     }
 
+    /**
+     * Method used to create a new project
+     */
     @FXML
     public void createNewProject(){
         try{
@@ -141,6 +160,10 @@ public class ProjectListController {
         }
     }
 
+    /**
+     * Method used to add a project to the list
+     * @param project The project to add
+     */
     public void addProject(String project){
         ProjectList.getItems().add(project);
     }

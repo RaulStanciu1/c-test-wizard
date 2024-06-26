@@ -7,6 +7,9 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.util.List;
 
+/**
+ * Entity used to store the summary of the test results after an execution
+ */
 public class TSummary {
     private final List<TResults> testResults;
     private Boolean resultsPassed;
@@ -15,6 +18,13 @@ public class TSummary {
     private final Integer totalTestSteps;
     private final Integer passedTestSteps;
 
+    /**
+     * Constructor for the summary
+     * @param testObject The test object
+     * @param testResults The test results
+     * @param coverageEnabled If coverage is enabled
+     * @throws Exception If there were issues creating the summary
+     */
     public TSummary(TObject testObject, List<TResults> testResults, boolean coverageEnabled) throws Exception{
         this.testResults = testResults;
         this.totalTestCases = testObject.getTestCases().size();
@@ -71,6 +81,13 @@ public class TSummary {
         }
     }
 
+    /**
+     * Private method to check if a certain test step is considered passed
+     * @param element The element to check
+     * @param globalOutputs The global outputs
+     * @param testStep The test step
+     * @return True if the test step is considered passed, false otherwise
+     */
     private boolean testStepPassed(CElement element,List<CElement> globalOutputs, int testStep){
         if(!elementPassed(element,testStep)){
             return false;
@@ -83,6 +100,12 @@ public class TSummary {
         return true;
     }
 
+    /**
+     * Helper Private method to check if a certain element is considered passed
+     * @param element The element to check
+     * @param testStep The test step
+     * @return True if the element is considered passed, false otherwise
+     */
     private boolean elementPassed(CElement element, int testStep){
         if(element instanceof CVariable variable){
             return variable.values.get(testStep).valueStatus != -1;
@@ -108,26 +131,50 @@ public class TSummary {
         return true;
     }
 
+    /**
+     * Get the number of passed test steps
+     * @return The number of passed test steps
+     */
     public Integer getPassedTestSteps() {
         return passedTestSteps;
     }
 
+    /**
+     * Get the total number of test steps
+     * @return The total number of test steps
+     */
     public Integer getTotalTestSteps() {
         return totalTestSteps;
     }
 
+    /**
+     * Get the total number of test cases
+     * @return The total number of test cases
+     */
     public Integer getTotalTestCases() {
         return totalTestCases;
     }
 
+    /**
+     * Get the coverage passed
+     * @return The coverage passed
+     */
     public Integer getCoveragePassed() {
         return coveragePassed;
     }
 
+    /**
+     * Get the results passed
+     * @return The results passed
+     */
     public Boolean getResultsPassed() {
         return resultsPassed;
     }
 
+    /**
+     * Get the test results
+     * @return The test results
+     */
     public List<TResults> getTestResults() {
         return testResults;
     }

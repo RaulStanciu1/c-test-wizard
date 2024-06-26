@@ -15,7 +15,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Class used to add coverage instrumentation to the source file
+ */
 public class CoverageInstrumenter {
+    /**
+     * Instrument the source file with coverage decisions
+     * @param testObject The test object
+     * @throws Exception If the source file could not be instrumented
+     */
     public static void instrumentObject(TObject testObject) throws Exception{
         //Create a copy of the preprocessed source file
         File sourceFile = new File(testObject.getParent().getTestDriver().getProjectPath()+File.separator+"ctw"+File.separator+"ctw_src_pre.c");
@@ -50,6 +58,12 @@ public class CoverageInstrumenter {
         addCoverageLibrary(testObject,decisions.size());
     }
 
+    /**
+     * Add the decisions to the source file
+     * @param instrumentedFile The instrumented file
+     * @param decisions The decisions to add
+     * @throws IOException If the file could not be read or written
+     */
     private static void addDecisionsToFile(File instrumentedFile, List<Decision> decisions) throws IOException {
         List<String> fileContent = FileUtils.readLines(instrumentedFile, "UTF-8");
         for(Decision decision : decisions){
@@ -61,6 +75,12 @@ public class CoverageInstrumenter {
         FileUtils.writeLines(instrumentedFile, fileContent);
     }
 
+    /**
+     * Add the coverage library to the project
+     * @param testObject The test object
+     * @param decisions The number of decisions
+     * @throws Exception If the coverage library could not be added
+     */
     private static void addCoverageLibrary(TObject testObject,int decisions) throws Exception{
         String coverageLibraryPath = testObject.getParent().getTestDriver().getProjectPath()+File.separator+"ctw"
                 +File.separator+"ctw_cov.c";

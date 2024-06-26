@@ -12,11 +12,17 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entity used to store all the necessary information related to test execution
+ */
 public class TDriver implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 105L;
     private final TProject _parent;
     private String sourceFilePath;
     private  String projectPath;
@@ -27,6 +33,14 @@ public class TDriver implements Serializable {
     private Double resultSignificance; /* Percentage that decides when test results are considered passed */
     private boolean coverageEnabled;
     private boolean reportEnabled;
+
+    /**
+     * Constructor for the test driver
+     * @param parent The parent project
+     * @param sourceFilePath The source file path
+     * @param projectPath The project path
+     * @param compiler The compiler
+     */
     public TDriver(TProject parent,String sourceFilePath, String projectPath, TCompiler compiler){
         this._parent = parent;
         this.sourceFilePath = sourceFilePath;
@@ -45,6 +59,10 @@ public class TDriver implements Serializable {
     /**
      * Analyze the source file for any changes, if changes have been found, update every
      * TObject and TInterface with the new elements added or removed
+     * @param consoleWriter The console writer(for UI)
+     * @return 1 if the interface has changed, 0 otherwise
+     * @throws IOException If there was an issue analyzing the source file
+     * @throws InterruptedException If the process was interrupted
      */
     public int analyze(ConsoleWriter consoleWriter) throws IOException, InterruptedException {
        /*Check if the working directory exists and if it does
@@ -217,6 +235,13 @@ public class TDriver implements Serializable {
         return interfaceChanged;
     }
 
+    /**
+     * Execute the test object
+     * @param testObject The test object
+     * @param consoleWriter The console writer(for UI)
+     * @return The summary of the test results
+     * @throws Exception If there were issues executing the test object
+     */
     public TSummary executeTestObject(TObject testObject,ConsoleWriter consoleWriter) throws Exception {
         if(!coverageEnabled){
             return executeNoCoverage(testObject,consoleWriter);
@@ -225,6 +250,13 @@ public class TDriver implements Serializable {
         }
     }
 
+    /**
+     * Execute the test object without coverage
+     * @param testObject The test object
+     * @param consoleWriter The console writer(for UI)
+     * @return The summary of the test results
+     * @throws Exception If there were issues executing the test object
+     */
     private TSummary executeNoCoverage(TObject testObject, ConsoleWriter consoleWriter) throws Exception{
         try{
             //Step 1: Analyze to check for any source file changes
@@ -260,6 +292,13 @@ public class TDriver implements Serializable {
 
     }
 
+    /**
+     * Execute the test object with coverage
+     * @param testObject The test object
+     * @param consoleWriter The console writer(for UI)
+     * @return The summary of the test results
+     * @throws Exception If there were issues executing the test object
+     */
     private TSummary executeCoverage(TObject testObject, ConsoleWriter consoleWriter) throws Exception{
         try{
             //Step 1: Analyze to check for any source file changes
@@ -297,138 +336,283 @@ public class TDriver implements Serializable {
 
     }
 
+    /**
+     * Get the source file path
+     * @return The source file path
+     */
     public String getSourceFilePath() {
         return sourceFilePath;
     }
 
+    /**
+     * Get the project path
+     * @return The project path
+     */
     public String getProjectPath() {
         return projectPath;
     }
 
+    /**
+     * Get the include directories
+     * @return The include directories
+     */
     public List<String> getIncludeDirectories() {
         return compiler.getIncludeDirectories();
     }
+
+    /**
+     * Get the linker files
+     * @return The linker files
+     */
     public List<String> getLinker() {
         return compiler.getLinkerFiles();
     }
 
+    /**
+     * Get the compiler
+     * @return The compiler
+     */
     public String getCompiler() {
         return compiler.getCompiler();
     }
 
+    /**
+     * Set the compiler
+     * @param compiler The compiler
+     */
     public void setCompiler(String compiler) {
         this.compiler.setCompiler(compiler);
     }
 
+    /**
+     * Get the preprocess flag
+     * @return The preprocess flag
+     */
     public String getPreprocessFlag() {
         return compiler.getPreprocessFlag();
     }
 
+    /**
+     * Set the preprocess flag
+     * @param preprocessFlag The preprocess flag
+     */
     public void setPreprocessFlag(String preprocessFlag) {
         this.compiler.setPreprocessFlag(preprocessFlag);
     }
 
+    /**
+     * Get the compile flag
+     * @return The compile flag
+     */
     public String getCompileFlag() {
         return this.compiler.getCompileFlag();
     }
 
+    /**
+     * Set the compile flag
+     * @param compileFlag The compile flag
+     */
     public void setCompileFlag(String compileFlag) {
         this.compiler.setCompileFlag(compileFlag);
     }
 
+    /**
+     * Get the source file path
+     * @param sourceFilePath The source file path
+     */
     public void setSourceFilePath(String sourceFilePath) {
         this.sourceFilePath = sourceFilePath;
     }
 
+    /**
+     * Set the project path
+     * @param projectPath The project path
+     */
     public void setProjectPath(String projectPath) {
         this.projectPath = projectPath;
     }
 
+    /**
+     * Get the defines list
+     * @return The defines list
+     */
     public List<CDefine> getDefines() {
         return defines;
     }
 
+    /**
+     * Get the test header path
+     * @return The test header path
+     */
     public String getTestHeaderPath() {
         return testHeaderPath;
     }
 
+    /**
+     * Set the test header path
+     * @param testHeaderPath The test header path
+     */
     public void setTestHeaderPath(String testHeaderPath) {
         this.testHeaderPath = testHeaderPath;
     }
 
+    /**
+     * Get the output flag
+     * @return The output flag
+     */
     public String getOutputFlag() {
         return compiler.getOutputFlag();
     }
 
+    /**
+     * Set the output flag
+     * @param outputFlag The output flag
+     */
     public void setOutputFlag(String outputFlag) {
         this.compiler.setOutputFlag(outputFlag);
     }
 
+    /**
+     * Get the linker flag
+     * @return The linker flag
+     */
     public String getLinkerFlag() {
         return compiler.getLinkerFlag();
     }
 
+    /**
+     * Set the linker flag
+     * @param linkerFlag The linker flag
+     */
     public void setLinkerFlag(String linkerFlag) {
         this.compiler.setLinkerFlag(linkerFlag);
     }
 
+    /**
+     * Get the include flag
+     * @return The include flag
+     */
     public String getIncludeFlag() {
         return compiler.getIncludeFlag();
     }
 
+    /**
+     * Set the include flag
+     * @param includeFlag The include flag
+     */
     public void setIncludeFlag(String includeFlag) {
         this.compiler.setIncludeFlag(includeFlag);
     }
 
+    /**
+     * Get the additional flags
+     * @return  The additional flags
+     */
     public String getAdditionalFlags() {
         return compiler.getAdditionalFlags();
     }
 
+    /**
+     * Set the additional flags
+     * @param additionalFlags The additional flags
+     */
     public void setAdditionalFlags(String additionalFlags) {
         this.compiler.setAdditionalFlags(additionalFlags);
     }
 
+    /**
+     * Get the coverage significance
+     * @return The coverage significance
+     */
     public Double getCoverageSignificance() {
         return coverageSignificance;
     }
 
+    /**
+     * Set the coverage significance
+     * @param coverageSignificance The coverage significance
+     */
     public void setCoverageSignificance(Double coverageSignificance) {
         this.coverageSignificance = coverageSignificance;
     }
 
+    /**
+     * Get the result significance
+     * @return The result significance
+     */
     public Double getResultSignificance() {
         return resultSignificance;
     }
 
+    /**
+     * Set the result significance
+     * @param resultSignificance The result significance
+     */
     public void setResultSignificance(Double resultSignificance) {
         this.resultSignificance = resultSignificance;
     }
 
+    /**
+     * Get if coverage is enabled
+     * @return If coverage is enabled
+     */
     public boolean isCoverageEnabled() {
         return coverageEnabled;
     }
 
+    /**
+     * Set if coverage is enabled
+     * @param coverageEnabled If coverage is enabled
+     */
     public void setCoverageEnabled(boolean coverageEnabled) {
         this.coverageEnabled = coverageEnabled;
     }
 
+    /**
+     * Get if report is enabled
+     * @return If report is enabled
+     */
     public boolean isReportEnabled() {
         return reportEnabled;
     }
 
+    /**
+     * Set if report is enabled
+     * @param reportEnabled If report is enabled
+     */
     public void setReportEnabled(boolean reportEnabled) {
         this.reportEnabled = reportEnabled;
     }
 
+    /**
+     * Add an Include Directory
+     * @param includeDirectory The include directory
+     */
     public void addIncludeDirectory(String includeDirectory){
         compiler.getIncludeDirectories().add(includeDirectory);
     }
 
+    /**
+     * Add a Linker File
+     * @param linker The linker file
+     */
     public void addLinker(String linker){
         compiler.getLinkerFiles().add(linker);
     }
 
+    /**
+     * Get the Object Files
+     * @return The object files
+     */
     public List<String> getObjectFiles(){
         return compiler.getObjectFiles();
+    }
+
+    /**
+     * Add an Object File
+     * @param objectFile The object file
+     */
+    public void addObjectFile(String objectFile){
+        compiler.getObjectFiles().add(objectFile);
     }
 }

@@ -15,25 +15,52 @@ import javafx.scene.control.cell.ComboBoxTableCell;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Factory class for creating tables in the GUI.
+ */
 public class TableFactory {
+    /**
+     * Adds a test step(column) to the table
+     * @param tableView the table
+     */
     public static void addTestStep(TreeTableView<CElement> tableView){
         int testSteps = tableView.getColumns().size()-1;
         TreeTableColumn<CElement, String> valueColumn = getcElementStringTreeTableColumn(testSteps);
         tableView.getColumns().add(valueColumn);
     }
 
+    /**
+     * Create the parameter table for a test case
+     * @param testCase the test case
+     * @return the tree table of the parameters
+     */
     public static TreeTableView<CElement> createParameterTable(TCase testCase){
         return createTable(testCase,testCase.getParameters(),"Parameters");
     }
 
+    /**
+     * Create the input globals table for a test case
+     * @param testCase the test case
+     * @return the tree table of the input globals
+     */
     public static TreeTableView<CElement> createInputGlobalsTable(TCase testCase){
         return createTable(testCase,testCase.getInputGlobals(),"Input Globals");
     }
 
+    /**
+     * Create the output globals table for a test case
+     * @param testCase the test case
+     * @return the tree table of the output globals
+     */
     public static TreeTableView<CElement> createOutputGlobalsTable(TCase testCase){
         return createTable(testCase,testCase.getOutputGlobals(),"Output Globals");
     }
 
+    /**
+     * Create the output table for a test case
+     * @param testCase the test case
+     * @return the tree table of the output
+     */
     public static TreeTableView<CElement> createOutputTable(TCase testCase){
         TreeTableView<CElement> tableView = new TreeTableView<>();
         TreeTableColumn<CElement, String> inputGlobalColumn = new TreeTableColumn<>("");
@@ -73,10 +100,21 @@ public class TableFactory {
         return tableView;
     }
 
+    /**
+     * Create the external functions table for a test interface
+     * @param tInterface the test interface
+     * @param tableUpdater the table updater
+     * @return the table of the external functions
+     */
     public static TableView<CElement> createExternalFunctionsTable(TInterface tInterface, TableUpdater tableUpdater){
         return createFunctionTable(tInterface,tInterface.getExternalFunctions(),"External Functions",tableUpdater);
     }
 
+    /**
+     * Create the globals table for a test interface
+     * @param tInterface the test interface
+     * @return the table of the globals
+     */
     public static TableView<CElement> createGlobalsTable(TInterface tInterface){
         ObservableList<TPassing> options = FXCollections.observableArrayList(TPassing.IN,TPassing.OUT,TPassing.INOUT,TPassing.NONE);
         TableColumn<CElement, String> globalColumn = new TableColumn<>("Globals");
@@ -96,6 +134,12 @@ public class TableFactory {
         globalsTable.setEditable(true);
         return globalsTable;
     }
+
+    /**
+     * Create the user globals table for a test interface
+     * @param tInterface the test interface
+     * @return the table of the user globals
+     */
     public static TableView<CElement> createUserGlobalsTable(TInterface tInterface){
         ObservableList<TPassing> options = FXCollections.observableArrayList(TPassing.IN,TPassing.OUT,TPassing.INOUT,TPassing.NONE);
         TableColumn<CElement, String> globalColumn = new TableColumn<>("User Globals");
@@ -116,6 +160,14 @@ public class TableFactory {
         return globalsTable;
     }
 
+    /**
+     * Helper function used to create the external functions table
+     * @param tInterface the test interface
+     * @param functionsList the list of functions
+     * @param columnName the name of the column(external functions)
+     * @param tableUpdater  the table updater
+     * @return the table of the (external) functions
+     */
     private static TableView<CElement> createFunctionTable(TInterface tInterface,List<CFunction> functionsList, String columnName, TableUpdater tableUpdater){
         TableView<CElement> functionsTable = new TableView<>();
         TableColumn<CElement, String> functionColumn = new TableColumn<>(columnName);
@@ -123,7 +175,6 @@ public class TableFactory {
         functionsTable.getColumns().add(functionColumn);
         functionsTable.getItems().addAll(functionsList);
         functionColumn.prefWidthProperty().bind(functionsTable.widthProperty());
-        //Center the elements from the table columns
         functionColumn.setStyle("-fx-alignment: CENTER;");
 
         ContextMenu ctxMenu = new ContextMenu();
@@ -147,6 +198,13 @@ public class TableFactory {
         return functionsTable;
     }
 
+    /**
+     * Helper function used to create the parameter, input globals and output globals tables
+     * @param testCase the test case
+     * @param elements the list of elements to be displayed in the table
+     * @param tableName the name of the table
+     * @return the table
+     */
     private static TreeTableView<CElement> createTable(TCase testCase,List<CElement> elements,String tableName){
         TreeTableView<CElement> tableView = new TreeTableView<>();
         TreeTableColumn<CElement, String> inputGlobalColumn = new TreeTableColumn<>("");
@@ -183,6 +241,11 @@ public class TableFactory {
         return tableView;
     }
 
+    /**
+     * Helper function used to create the value columns for the tables
+     * @param i the index of the column
+     * @return the value column
+     */
     private static TreeTableColumn<CElement, String> getcElementStringTreeTableColumn(int i) {
         TreeTableColumn<CElement, String> valueColumn = new TreeTableColumn<>(String.valueOf(i +1));
         valueColumn.setPrefWidth(50);
@@ -285,6 +348,12 @@ public class TableFactory {
         return valueColumn;
     }
 
+    /**
+     * Helper function used to create the value columns for the tables
+     * @param param
+     * @param index the test step
+     * @return
+     */
     private static SimpleStringProperty _valueColumnFactory(TreeTableColumn.CellDataFeatures<CElement, String> param, int index){
         CElement element = param.getValue().getValue();
         if(element instanceof CVariable variable){
@@ -298,6 +367,12 @@ public class TableFactory {
         }
         return new SimpleStringProperty("");
     }
+
+    /**
+     * Helper function used to create the tree structure of the struct or union
+     * @param instance the struct or union instance
+     * @return the tree item
+     */
     private static TreeItem<CElement> _getStructOrUnionChild(CStructOrUnionInstance instance){
         TreeItem<CElement> root = new TreeItem<>(instance);
         root.setExpanded(true);

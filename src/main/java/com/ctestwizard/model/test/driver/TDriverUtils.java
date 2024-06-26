@@ -11,8 +11,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Utility class used to generate the test driver files and run the test driver
+ */
 public class TDriverUtils {
-
+    /**
+     * Generate the defines file which the user can complete
+     * @param parent The parent project
+     * @throws Exception If there were issues generating the test driver files
+     */
     public static void generateDefinesFile(TProject parent) throws Exception{
         File definesFile = new File(parent.getTestDriver().getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_defines.h");
         if(definesFile.exists()){
@@ -32,7 +39,10 @@ public class TDriverUtils {
         definesFileContent.append("#endif\n");
         FileUtils.writeStringToFile(definesFile,definesFileContent.toString(),"UTF-8",false);
     }
-
+    /**
+     * Generate the test header file which the user can complete
+     * @param testDriver The test driver
+     */
     public static void generateTestHeaderFile(TDriver testDriver) throws Exception{
         File testHeaderFile = new File(testDriver.getTestHeaderPath());
         if(testHeaderFile.exists()){
@@ -54,6 +64,12 @@ public class TDriverUtils {
         FileUtils.writeStringToFile(testHeaderFile, testHeaderFileContent,"UTF-8",false);
     }
 
+    /**
+     * Generate the file used to store the prologue and epilogue code which is used every test step
+     * @param testObject The test object
+     * @param parent The parent project
+     * @throws Exception If there were issues generating the prologue epilogue file
+     */
     public static void generatePrologueEpilogueFile(TObject testObject, TProject parent) throws Exception{
         File prologueEpilogueFile = new File(parent.getTestDriver().getProjectPath() + File.separator + "ctw" + File.separator + "ctw_prolog_epilogue.c");
         if(prologueEpilogueFile.exists()){
@@ -73,6 +89,12 @@ public class TDriverUtils {
         FileUtils.writeStringToFile(prologueEpilogueFile, prologueEpilogueFileContent,"UTF-8",false);
     }
 
+    /**
+     * Generate the test driver file(with no coverage), the starting point of the test application
+     * @param parent The parent project
+     * @throws IOException If there were issues generating the test driver file
+     * @throws NullPointerException If the test header file was not found
+     */
     public static void generateTestDriverFile(TProject parent) throws IOException, NullPointerException {
         File testDriverFile = new File(parent.getTestDriver().getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_driver.c");
         if (!testDriverFile.exists()) {
@@ -117,6 +139,12 @@ public class TDriverUtils {
         FileUtils.writeStringToFile(testDriverFile, TEST_CASES_DEFINE + testDriverFileContent, "UTF-8", false);
     }
 
+    /**
+     * Generate the test driver file(with coverage), the starting point of the test application
+     * @param parent The parent project
+     * @throws IOException If there were issues generating the test driver file
+     * @throws NullPointerException If the test header file was not found
+     */
     public static void generateTestDriverCoverageFile(TProject parent) throws IOException, NullPointerException {
         File testDriverFile = new File(parent.getTestDriver().getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_driver.c");
         if (!testDriverFile.exists()) {
@@ -177,6 +205,12 @@ public class TDriverUtils {
         FileUtils.writeStringToFile(testDriverFile, TEST_CASES_DEFINE + testDriverFileContent, "UTF-8", false);
     }
 
+    /**
+     * Generate the stub code file which contains the stubs for the test object's interface
+     * @param testObject The test object
+     * @param parent The parent project
+     * @throws IOException If there were issues generating the stub code file
+     */
     public static void createStubCodeFile(TObject testObject, TProject parent) throws IOException {
         //Generate the stub file based on the test object's interface
         File stubCodeFile = getTestFile(parent, "ctw_stubs.c");
@@ -202,6 +236,12 @@ public class TDriverUtils {
 
     }
 
+    /**
+     * Generate the test data file which contains the test data for the test cases
+     * @param testObject The test object
+     * @param parent The parent project
+     * @throws IOException If there were issues generating the test data file
+     */
     public static void generateTestDataFile(TObject testObject, TProject parent) throws IOException {
         File testDataFile = getTestFile(parent, "ctw_test_data.c");
         StringBuilder testDataFileContent = new StringBuilder();
@@ -239,6 +279,13 @@ public class TDriverUtils {
         FileUtils.writeStringToFile(testDataFile, testDataFileContent.toString(), "UTF-8", false);
     }
 
+    /**
+     * Helper method used to return a file
+     * @param parent The parent project
+     * @param fileName The file name
+     * @return The file
+     * @throws IOException If there were issues getting the file
+     */
     private static File getTestFile(TProject parent, String fileName) throws IOException {
         File testFile = new File(parent.getTestDriver().getProjectPath() + File.separator + "ctw" + File.separator + fileName);
         if (testFile.exists()) {
@@ -252,6 +299,12 @@ public class TDriverUtils {
         return testFile;
     }
 
+    /**
+     * Generate the test steps file which contains the data for each test step
+     * @param testObject The test object
+     * @param parent The parent project
+     * @throws IOException If there were issues generating the test steps file
+     */
     public static void generateTestStepsFile(TObject testObject, TProject parent) throws IOException {
         File testStepsFile = getTestFile(parent, "ctw_test_steps.c");
         StringBuilder testStepsFileContent = new StringBuilder();
@@ -269,6 +322,12 @@ public class TDriverUtils {
         FileUtils.writeStringToFile(testStepsFile, testStepsFileContent.toString(), "UTF-8", true);
     }
 
+    /**
+     * Compiles the test driver using process builder
+     * @param driver The test driver
+     * @param consoleWriter The console writer
+     * @throws Exception If there were issues compiling the test driver file
+     */
     public static void compileTestDriverFile(TDriver driver,ConsoleWriter consoleWriter) throws Exception {
         //Compile the test driver file using the given compiler
         ProcessBuilder processBuilder = new ProcessBuilder();
@@ -301,6 +360,12 @@ public class TDriverUtils {
         }
     }
 
+    /**
+     * Run the test driver file using proccess builder
+     * @param driver The test driver
+     * @param consoleWriter The console writer
+     * @throws Exception If there were issues running the test driver file
+     */
     public static void runTestDriverFile(TDriver driver,ConsoleWriter consoleWriter) throws Exception {
         //Run the test driver file
         ProcessBuilder processBuilder = new ProcessBuilder(driver.getProjectPath() + "/ctw/ctw_test_driver.exe");
@@ -314,6 +379,13 @@ public class TDriverUtils {
         }
     }
 
+    /**
+     * Parse the results of the test application from the test data output file
+     * @param testObject The test object
+     * @param parent The parent project
+     * @return The results of the test application
+     * @throws Exception If there were issues parsing the test data output file
+     */
     public static List<TResults> parseTestDataOutputFile(TObject testObject, TProject parent) throws Exception {
         //Step 1: Open the test data output file
         File testDataOutputFile = new File(parent.getTestDriver().getProjectPath() + File.separator + "ctw" + File.separator + "test_data_output.txt");
@@ -354,11 +426,29 @@ public class TDriverUtils {
         return results;
     }
 
+    /**
+     * Helper method used to handle the output of the test application
+     * @param result The results of the test application
+     * @param step The step of the test application
+     * @param elementName The name of the element
+     * @param elementValue The value of the element
+     * @param match If the element matched the expected value
+     * @throws Exception If there were issues parsing the test results
+     */
     private static void _handleOutput(TResults result, int step, String elementName, String elementValue, boolean match) throws Exception {
         CElement output = result.getOutput();
         __handleElement(output, step, elementName, elementValue, match);
     }
 
+    /**
+     * Helper method used to handle the global output of the test application
+     * @param result The results of the test application
+     * @param step The step of the test application
+     * @param elementName The name of the element
+     * @param elementValue The value of the element
+     * @param match If the element matched the expected value
+     * @throws Exception If there were issues parsing the test results
+     */
     private static void _handleGlobalOutput(TResults result, int step, String elementName, String elementValue, boolean match) throws Exception {
         for (CElement global : result.getGlobalOutputs()){
             if(global.getName().equals(elementName)){
@@ -367,6 +457,15 @@ public class TDriverUtils {
         }
     }
 
+    /**
+     * Helper method used to handle an element of the test application
+     * @param element The element
+     * @param step The step of the test application
+     * @param elementName The name of the element
+     * @param elementValue The value of the element
+     * @param match If the element matched the expected value
+     * @throws Exception If there were issues parsing the test results
+     */
     private static void __handleElement(CElement element,int step, String elementName, String elementValue, boolean match) throws Exception{
         if (element instanceof CVariable var) {
             var.values.set(step, new CValue(elementValue,match ? 1 : -1));
@@ -419,6 +518,10 @@ public class TDriverUtils {
         }
     }
 
+    /**
+     * Delete all the generated files by the test driver
+     * @param testDriver The test driver
+     */
     public static void cleanUpTestDriverFiles(TDriver testDriver){
         File testDriverFile = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_driver.c");
         File testStepsFile = new File(testDriver.getProjectPath() + File.separator + "ctw" + File.separator + "ctw_test_steps.c");

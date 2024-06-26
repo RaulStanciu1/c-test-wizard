@@ -20,6 +20,9 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Objects;
 
+/**
+ * Controller for the test execution settings view form
+ */
 public class TestExecutionSettingsController {
     @FXML
     private TableView<TProperty> PropertyTable;
@@ -38,11 +41,19 @@ public class TestExecutionSettingsController {
     private TProject project;
     private Stage parentStage;
 
+    /**
+     * Set up the controller
+     * @param project The project
+     * @param parentStage The parent stage
+     */
     public void setup(TProject project, Stage parentStage){
         this.project = project;
         this.parentStage = parentStage;
     }
 
+    /**
+     * Initialize the controller
+     */
     public void init(){
         setupPropertyTable();
         setupDefinesList();
@@ -53,6 +64,9 @@ public class TestExecutionSettingsController {
         CreateReport.setSelected(project.getTestDriver().isReportEnabled());
     }
 
+    /**
+     * Private method to set up the property table
+     */
     private void setupPropertyTable(){
         PropertyTable.getColumns().clear();
         PropertyTable.getItems().clear();
@@ -88,6 +102,9 @@ public class TestExecutionSettingsController {
 
     }
 
+    /**
+     * Private method to set up the defines list
+     */
     private void setupDefinesList(){
         DefinesList.getItems().clear();
         project.getTestDriver().getDefines().forEach(define -> DefinesList.getItems().add(define));
@@ -98,6 +115,9 @@ public class TestExecutionSettingsController {
         DefinesList.setContextMenu(contextMenu);
     }
 
+    /**
+     * Private method to set up the object list
+     */
     private void setupObjectList(){
         ObjectList.getItems().clear();
         project.getTestDriver().getObjectFiles().forEach(object -> ObjectList.getItems().add(object));
@@ -108,6 +128,9 @@ public class TestExecutionSettingsController {
         ObjectList.setContextMenu(contextMenu);
     }
 
+    /**
+     * Private method to set up the linker list
+     */
     private void setupLinkerList(){
         LinkerList.getItems().clear();
         project.getTestDriver().getLinker().forEach(linker -> LinkerList.getItems().add(linker));
@@ -118,6 +141,9 @@ public class TestExecutionSettingsController {
         LinkerList.setContextMenu(contextMenu);
     }
 
+    /**
+     * Private method to set up the include list
+     */
     private void setupIncludeList(){
         IncludeList.getItems().clear();
         project.getTestDriver().getIncludeDirectories().forEach(include -> IncludeList.getItems().add(include));
@@ -128,6 +154,9 @@ public class TestExecutionSettingsController {
         IncludeList.setContextMenu(contextMenu);
     }
 
+    /**
+     * Method used to commit the property changes
+     */
     @FXML
     public void commitPropertyChanges(){
         PropertyTable.getItems().forEach(property -> {
@@ -177,6 +206,9 @@ public class TestExecutionSettingsController {
         project.getTestDriver().setReportEnabled(CreateReport.isSelected());
     }
 
+    /**
+     * Method used to create a define
+     */
     @FXML
     public void createDefine(){
         FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource("create-define-view.fxml"));
@@ -199,6 +231,9 @@ public class TestExecutionSettingsController {
         }
     }
 
+    /**
+     * Method to remove a selected define
+     */
     @FXML
     public void removeSelectedDefine(){
         CDefine selectedDefine = DefinesList.getSelectionModel().getSelectedItem();
@@ -209,6 +244,9 @@ public class TestExecutionSettingsController {
         DefinesList.getItems().remove(selectedDefine);
     }
 
+    /**
+     * Method to add a linker file
+     */
     @FXML
     public void addLinker(){
         TextInputDialog dialog = new TextInputDialog();
@@ -221,6 +259,9 @@ public class TestExecutionSettingsController {
         });
     }
 
+    /**
+     * Method to remove the selected linker file
+     */
     @FXML
     public void removeSelectedLinker(){
         String selectedLinker = LinkerList.getSelectionModel().getSelectedItem();
@@ -231,6 +272,9 @@ public class TestExecutionSettingsController {
         LinkerList.getItems().remove(selectedLinker);
     }
 
+    /**
+     * Method to add an include directory
+     */
     @FXML
     public void addIncludeDirectory(){
         TextInputDialog dialog = new TextInputDialog();
@@ -243,6 +287,9 @@ public class TestExecutionSettingsController {
         });
     }
 
+    /**
+     * Method to remove a selected directory
+     */
     @FXML
     public void removeSelectedDirectory(){
         String selectedDirectory = IncludeList.getSelectionModel().getSelectedItem();
@@ -253,6 +300,9 @@ public class TestExecutionSettingsController {
         IncludeList.getItems().remove(selectedDirectory);
     }
 
+    /**
+     * Method to add an object file
+     */
     @FXML
     public void addObject(){
         TextInputDialog dialog = new TextInputDialog();
@@ -265,6 +315,9 @@ public class TestExecutionSettingsController {
         });
     }
 
+    /**
+     * Method to remove a selected object file
+     */
     @FXML
     public void removeSelectedObject(){
         String selectedObject = ObjectList.getSelectionModel().getSelectedItem();
@@ -275,6 +328,10 @@ public class TestExecutionSettingsController {
         ObjectList.getItems().remove(selectedObject);
     }
 
+    /**
+     * Method to add a define in the defines list
+     * @param define the new define
+     */
     public void updateDefines(CDefine define){
         project.getTestDriver().getDefines().add(define);
         DefinesList.getItems().add(define);

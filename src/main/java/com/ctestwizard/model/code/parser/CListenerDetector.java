@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Listener used to detect the different elements in the C source file
+ */
 public class CListenerDetector extends CBaseListener implements Cloneable {
     private List<CElement> structOrUnionList;
     private List<CFunction> localFunctions;
@@ -18,6 +21,9 @@ public class CListenerDetector extends CBaseListener implements Cloneable {
     private List<CFunction> externalFunctions;
     private List<CElement> globals;
 
+    /**
+     * Constructor for the listener
+     */
     public CListenerDetector() {
         this.structOrUnionList = new ArrayList<>();
         this.localFunctions = new ArrayList<>();

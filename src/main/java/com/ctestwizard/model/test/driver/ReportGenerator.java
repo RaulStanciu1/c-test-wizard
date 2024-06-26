@@ -17,7 +17,17 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+/**
+ * Class used to generate a report for the test execution
+ */
 public class ReportGenerator {
+    /**
+     * Generate a report for the test execution
+     * @param project The project
+     * @param selectedObject The selected object
+     * @param summary The summary of the test results
+     * @throws Exception If there were issues generating the report
+     */
     public static void generateReport(TProject project, TObject selectedObject, TSummary summary) throws Exception {
         // Generate report
         Document document = new Document();
@@ -78,6 +88,15 @@ public class ReportGenerator {
         document.close();
     }
 
+    /**
+     * Add a test step to the document
+     * @param document The document
+     * @param testResult The test result
+     * @param object The object
+     * @param tCase The test case
+     * @param tStep The test step
+     * @throws Exception If there were issues adding the test step to the document
+     */
     private static void addTestStepToDocument(Document document, TResults testResult,TObject object, int tCase,int tStep) throws Exception {
         Paragraph testStepTitle = new Paragraph("Test Step #"+(tStep+1));
         testStepTitle.setFont(new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD));
@@ -92,6 +111,10 @@ public class ReportGenerator {
 
     }
 
+    /**
+     * Add the table header
+     * @param table The table
+     */
     private static void addTableHeader(PdfPTable table) {
         Stream.of("Element", "Actual Value", "Status")
                 .forEach(columnTitle -> {
@@ -103,6 +126,10 @@ public class ReportGenerator {
                 });
     }
 
+    /**
+     * Add the table header for the overview table
+     * @param table The table
+     */
     private static void addTableHeaderOverview(PdfPTable table) {
         Stream.of("Property","Value")
                 .forEach(columnTitle -> {
@@ -114,6 +141,14 @@ public class ReportGenerator {
                 });
     }
 
+    /**
+     * Add the rows with the test results
+     * @param table the table
+     * @param testResult the test result
+     * @param testCase the test case
+     * @param tStep the test step
+     * @throws Exception If there were issues adding the rows
+     */
     private static void addRows(PdfPTable table, TResults testResult, TCase testCase, int tStep) throws Exception {
         for(CElement global : testResult.getGlobalOutputs()){
             // Check the type of the global
@@ -215,6 +250,16 @@ public class ReportGenerator {
         }
     }
 
+    /**
+     * Add the rows for the struct elements
+     * @param table The table
+     * @param testResult The test result
+     * @param testCase The test case
+     * @param tStep The test step
+     * @param element The element
+     * @param name The name
+     * @throws Exception If there were issues adding the rows
+     */
     private static void addStructRows(PdfPTable table, TResults testResult, TCase testCase, int tStep, CElement element, String name) throws Exception{
         if(element instanceof CVariable variable){
             if(variable.values.get(tStep).valueStatus == 0 || Objects.equals(variable.values.get(tStep).value, "")){
@@ -264,6 +309,16 @@ public class ReportGenerator {
             }
         }
     }
+
+    /**
+     * Add the rows for the array elements
+     * @param table The table
+     * @param testResult The test result
+     * @param testCase The test case
+     * @param tStep The test step
+     * @param arrayElement The array element
+     * @throws Exception If there were issues adding the rows
+     */
     private static void addArrayRows(PdfPTable table, TResults testResult, TCase testCase, int tStep, CElement arrayElement) throws Exception{
         if(arrayElement instanceof CVariable variable){
             if(variable.values.get(tStep).valueStatus == 0 || Objects.equals(variable.values.get(tStep).value, "")){

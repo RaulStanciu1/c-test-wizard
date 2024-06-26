@@ -7,7 +7,15 @@ import com.ctestwizard.model.test.entity.TObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Static analyzer used to analyze the test object when the user chooses
+ */
 public class StaticAnalyzer {
+    /**
+     * Analyze the test object for any missing values in tests or for missing title and description in test cases
+     * @param object The test object to analyze
+     * @return A list of logs with the issues found
+     */
     public static List<String> staticAnalysis(TObject object) {
         List<String> log = new ArrayList<>();
         //Analyze the title and description of each test case
@@ -42,7 +50,15 @@ public class StaticAnalyzer {
         return log;
     }
 
-
+    /**
+     * Check the element list for missing values
+     * @param elementList The list of elements to check
+     * @param log The log to add the issues found
+     * @param tCaseId The test case id
+     * @param tStep The test step
+     * @param severity The severity of the issue
+     * @param valueNeeded If the value is needed
+     */
     private static void checkElementList(List<CElement> elementList, List<String> log, int tCaseId, int tStep, String severity, boolean valueNeeded){
         for(CElement element : elementList) {
             if(element instanceof CVariable variable){
@@ -64,6 +80,16 @@ public class StaticAnalyzer {
         }
     }
 
+    /**
+     * Check for missing values in the element
+     * @param element the element to check
+     * @param valueList the list of values
+     * @param log the log to add the issues found
+     * @param tCaseId the test case id
+     * @param tStep the test step
+     * @param severity the severity of the issue
+     * @param valueNeeded if the value is needed
+     */
     private static void checkMissingValues(CElement element,List<CValue> valueList, List<String> log, int tCaseId, int tStep, String severity, boolean valueNeeded){
         CValue value = valueList.get(tStep);
         if(value.value.isEmpty()){
@@ -73,6 +99,16 @@ public class StaticAnalyzer {
         }
     }
 
+    /**
+     * Check for missing values or for values that are not valid in the enum instance
+     * @param enumInstance the enum instance to check
+     * @param valueList the list of values
+     * @param log the log to add the issues found
+     * @param tCaseId the test case id
+     * @param tStep the test step
+     * @param severity the severity of the issue
+     * @param valueNeeded if the value is needed
+     */
     private static void checkMissingValuesEnum(CEnumInstance enumInstance, List<CValue> valueList, List<String> log, int tCaseId, int tStep, String severity, boolean valueNeeded){
         CValue value = valueList.get(tStep);
         if(value.value.isEmpty()){

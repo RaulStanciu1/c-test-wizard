@@ -3,7 +3,17 @@ package com.ctestwizard.model.test.driver;
 import com.ctestwizard.model.code.entity.*;
 import com.ctestwizard.model.test.entity.TCase;
 
+/**
+ * Class used to write the test driver code
+ */
 public class TWriter {
+    /**
+     * Method that returns the content of the test step before the test function call
+     * (setting the inputs and the prologue cod)
+     * @param tCase The test case
+     * @param j The test step index
+     * @return The content of the test step before the test function call
+     */
     public static String getPreStepContent(TCase tCase, int j) {
         //Convert the input parameters and globals in the C file to a string
         StringBuilder sb = new StringBuilder();
@@ -13,18 +23,36 @@ public class TWriter {
             String parameterName = "__CTW__PARAM__"+index;
             index++;
             if(parameter instanceof CVariable && !((CVariable)parameter).values.get(j).value.isEmpty() && !((CVariable)parameter).values.get(j).value.equals("*none*")){
-                sb.append(parameter.getType()).append("*".repeat(((CVariable) parameter).getPointers() - 1)).append(" ");
+                String pointers;
+                if(((CVariable) parameter).getPointers() == 0) {
+                    pointers = "";
+                }else{
+                    pointers = "*".repeat(((CVariable) parameter).getPointers() - 1);
+                }
+                sb.append(parameter.getType()).append(pointers).append(" ");
                 sb.append(parameterName).append(" = ");
                 sb.append(((CVariable) parameter).values.get(j).value).append(";\n");
             }else if(parameter instanceof CEnumInstance && !((CEnumInstance)parameter).values.get(j).value.isEmpty() && !((CEnumInstance)parameter).values.get(j).value.equals("*none*")){
-                sb.append(parameter.getType()).append("*".repeat(((CEnumInstance) parameter).getPointers() - 1)).append(" ");
+                String pointers;
+                if(((CEnumInstance) parameter).getPointers() == 0){
+                    pointers = "";
+                }else{
+                    pointers = "*".repeat(((CEnumInstance) parameter).getPointers() - 1);
+                }
+                sb.append(parameter.getType()).append(pointers).append(" ");
                 sb.append(parameterName).append(" = ");
                 sb.append(((CEnumInstance) parameter).values.get(j).value).append(";\n");
             } else if(parameter instanceof CStructOrUnionInstance structOrUnionInstance){
                 if(structOrUnionInstance.getPointers() == 0){
                     sb.append(_addStructOrUnionInstance(parameter.getType()+" "+parameterName+".",structOrUnionInstance, j));
                 }else if(!structOrUnionInstance.values.get(j).value.isEmpty() && !structOrUnionInstance.values.get(j).value.equals("*none*")){
-                    sb.append(structOrUnionInstance.getType()).append("*".repeat(structOrUnionInstance.getPointers() - 1)).append(" ");
+                    String pointers;
+                    if(structOrUnionInstance.getPointers() == 0) {
+                        pointers = "";
+                    }else{
+                        pointers = "*".repeat(structOrUnionInstance.getPointers() - 1);
+                    }
+                    sb.append(structOrUnionInstance.getType()).append(pointers).append(" ");
                     sb.append(parameterName).append(" = ");
                     sb.append(structOrUnionInstance.values.get(j).value).append(";\n");
                 }
@@ -86,6 +114,13 @@ public class TWriter {
         return sb.toString();
     }
 
+    /**
+     * Private method used to add the struct or union instance to the string
+     * @param parameterName The name of the parameter
+     * @param structOrUnionInstance The struct or union instance
+     * @param j The test step index
+     * @return The string with the struct or union instance
+     */
     private static String _addStructOrUnionInstance(String parameterName,CStructOrUnionInstance structOrUnionInstance, int j){
         StringBuilder sb = new StringBuilder();
         for(CElement element: structOrUnionInstance.getStructType().getMembers()){
@@ -124,7 +159,12 @@ public class TWriter {
         return sb.toString();
     }
 
-
+    /**
+     * Method that returns the content of the test step that makes the function call and the epilogue code
+     * @param tCase The test case
+     * @param j The test step index
+     * @return The content of the test step that makes the function call and the epilogue code
+     */
     public static String getStepContent(TCase tCase, int j) {
         // Call the function with the input parameters
         // and if the type is not void store it to a variable of its return type
@@ -154,6 +194,13 @@ public class TWriter {
         return sb.toString();
     }
 
+    /**
+     * Method that returns the content of the test step after the test function call (Checks the outputs)
+     * @param testCaseIndex The index of the test case
+     * @param tCase The test case
+     * @param j The test step index
+     * @return The content of the test step after the test function call
+     */
     public static String getPostStepContent(int testCaseIndex,TCase tCase, int j) {
         StringBuilder sb = new StringBuilder();
 
@@ -236,6 +283,15 @@ public class TWriter {
         return sb.toString();
     }
 
+    /**
+     * Private method used to write the struct or union instance to the string
+     * @param parameterName The name of the parameter
+     * @param instance The struct or union instance
+     * @param testCase The index of the test case
+     * @param testStep The index of the test step
+     * @param variableName The name of the variable
+     * @return The string with the struct or union instance
+     */
     private static String _writeStructOrUnionInstance(String parameterName,CStructOrUnionInstance instance, int testCase,int testStep,String variableName){
         StringBuilder sb = new StringBuilder();
         for(CElement element: instance.getStructType().getMembers()){

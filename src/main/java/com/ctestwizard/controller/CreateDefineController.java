@@ -6,6 +6,9 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+/**
+ * Controller for the create define dialog
+ */
 public class CreateDefineController {
 
     private TestExecutionSettingsController parentController;
@@ -15,10 +18,19 @@ public class CreateDefineController {
     @FXML
     private TextField DefineValue;
 
+    /**
+     * Set up the controller
+     * @param parentController The parent controller
+     * @param stage The stage
+     */
     public void setup(TestExecutionSettingsController parentController, Stage stage){
         this.parentController = parentController;
         this.stage = stage;
     }
+
+    /**
+     * Method used to create a define
+     */
     @FXML
     public void createDefine(){
         String name = DefineName.getText();

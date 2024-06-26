@@ -4,7 +4,6 @@ import com.ctestwizard.MainApplication;
 
 import com.ctestwizard.model.code.entity.CElement;
 import com.ctestwizard.model.code.entity.CFunction;
-import com.ctestwizard.model.coverage.CoverageInstrumenter;
 import com.ctestwizard.model.exception.InterfaceChangedException;
 import com.ctestwizard.model.test.driver.*;
 import com.ctestwizard.model.test.entity.TCase;
@@ -42,7 +41,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-
+/**
+ * The controller for the main view of the application(the project view)
+ */
 public class MainController{
     private TProject project;
     private Stage parentStage;
@@ -103,10 +104,19 @@ public class MainController{
     @FXML
     private TextArea EpilogueCode;
 
+    /**
+     * Method used to set up the controller data
+     * @param project The project to be set up
+     * @param parentStage The parent stage of the project
+     */
     public void setup(TProject project, Stage parentStage){
         this.project = project;
         this.parentStage = parentStage;
     }
+
+    /**
+     * Initialize all the ui elements with the data from the project
+     */
     public void init(){
         TestObjectTable.getItems().clear();
         TestObjectColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getTestObject().getTestFunction().getName()));
@@ -181,6 +191,10 @@ public class MainController{
         NewTestStepBtn.setDisable(true);
     }
 
+    /**
+     * Private method used to create the menu item for deleting a test case
+     * @return The menu item for deleting a test case
+     */
     private MenuItem getMenuItem() {
         MenuItem removeTestCase = new MenuItem("Delete Test Case");
         removeTestCase.setOnAction(event -> {
@@ -202,6 +216,10 @@ public class MainController{
         return removeTestCase;
     }
 
+    /**
+     * Method to open the test execution settings form
+     * @throws IOException If the form could not be loaded
+     */
     @FXML
     public void handleTestExecutionSettingsClick() throws IOException {
         Stage formStage = new Stage();
@@ -217,6 +235,10 @@ public class MainController{
         formStage.getIcons().add(new Image(Objects.requireNonNull(MainApplication.class.getResourceAsStream("img/icon.png"))));
         formStage.show();
     }
+
+    /**
+     * Method to handle the event when the user clicks on a test object (show the test object details)
+     */
     @FXML
     public void handleTObjectClick(){
         MainPane.getTabs().get(0).setDisable(false);
@@ -279,6 +301,9 @@ public class MainController{
         });
     }
 
+    /**
+     * Method that handles the event when the user clicks on a test case from a test object
+     */
     @FXML
     public void handleTCaseClick(){
         MainPane.getTabs().get(0).setDisable(true);
@@ -311,6 +336,9 @@ public class MainController{
         TestDataBox.getChildren().add(TableFactory.createOutputTable(selectedCase));
     }
 
+    /**
+     * Method to change the title of a test case when the user changes it
+     */
     @FXML
     public void changeTitle(){
         TCaseTable selectedTable = TestCaseTable.getSelectionModel().getSelectedItem();
@@ -325,6 +353,9 @@ public class MainController{
         TestCaseTable.refresh();
     }
 
+    /**
+     * Method to change the description of a test case when the user changes it
+     */
     @FXML
     public void changeDescription(){
         TCaseTable selectedTable = TestCaseTable.getSelectionModel().getSelectedItem();
@@ -338,6 +369,9 @@ public class MainController{
         selectedCase.setDescription(TestCaseDescription.getText());
     }
 
+    /**
+     * Method to create a new test case for a test object
+     */
     @FXML
     public void handleCreateNewTestCase(){
         TObjectTable selectedTable = TestObjectTable.getSelectionModel().getSelectedItem();
@@ -354,6 +388,9 @@ public class MainController{
         TestCaseTable.getItems().add(new TCaseTable(newCase));
     }
 
+    /**
+     * Method that takes the selected test object and runs the tests
+     */
     @FXML
     public void handleExecuteTestObject() {
         try{
@@ -453,6 +490,9 @@ public class MainController{
         }
     }
 
+    /**
+     * Method that creates a new test step for a test case
+     */
     @FXML
     public void handleNewTestStep(){
         TCaseTable selectedTable = TestCaseTable.getSelectionModel().getSelectedItem();
@@ -474,6 +514,10 @@ public class MainController{
         TableFactory.addTestStep(outputTable);
     }
 
+    /**
+     * Method that open the new user global form
+     * @throws IOException If the form could not be loaded
+     */
     @FXML
     public void handleNewUserGlobal() throws IOException{
         TObjectTable selectedTable = TestObjectTable.getSelectionModel().getSelectedItem();
@@ -497,6 +541,9 @@ public class MainController{
         formStage.show();
     }
 
+    /**
+     * Method used to set the body of a stub function
+     */
     @FXML
     public void setStubBody(){
         TObjectTable selectedTable = TestObjectTable.getSelectionModel().getSelectedItem();
@@ -514,6 +561,9 @@ public class MainController{
         selectedObject.getTestInterface().getStubCode().put(selectedFunction,StubFunctionBody.getText());
     }
 
+    /**
+     * Method used to save the project
+     */
     @FXML
     public void saveProject(){
         try{
@@ -531,6 +581,10 @@ public class MainController{
         }
     }
 
+    /**
+     * Method used to close the project and return to the project list
+     * @throws IOException If the project list form could not be loaded
+     */
     @FXML
     public void closeProject() throws IOException {
         Stage formStage = new Stage();
@@ -545,6 +599,9 @@ public class MainController{
         formStage.show();
     }
 
+    /**
+     * Method used to run the static analysis on the selected test object
+     */
     @FXML
     public void staticAnalysis(){
         TObject selectedObject = TestObjectTable.getSelectionModel().getSelectedItem().getTestObject();
@@ -578,6 +635,9 @@ public class MainController{
         }
     }
 
+    /**
+     * Method used to set the prologue body of a test object
+     */
     @FXML
     public void setPrologueBody(){
         TObject selectedObject = TestObjectTable.getSelectionModel().getSelectedItem().getTestObject();
@@ -587,6 +647,9 @@ public class MainController{
         selectedObject.setPrologueCode(PrologueCode.getText());
     }
 
+    /**
+     * Method used to set the epilogue body of a test object
+     */
     @FXML
     public void setEpilogueBody(){
         TObject selectedObject = TestObjectTable.getSelectionModel().getSelectedItem().getTestObject();
@@ -596,6 +659,9 @@ public class MainController{
         selectedObject.setEpilogueCode(EpilogueCode.getText());
     }
 
+    /**
+     * Method used to open this software's repository
+     */
     @FXML
     public void openProjectRepo(){
         try{
@@ -612,12 +678,18 @@ public class MainController{
     }
 
 
-
+    /**
+     * Method used to add an entry to the user globals table
+     * @param entry The entry to be added
+     */
     public void addEntryToUserGlobalsTable(CElement entry){
         TableView<CElement> userGlobalsTable = (TableView<CElement>) InterfaceBox.getChildren().get(3);
         userGlobalsTable.getItems().add(entry);
     }
 
+    /**
+     * Method used to print the memory used by the application
+     */
     private void startMemoryMonitoring(){
         AnimationTimer timer = new AnimationTimer() {
             @Override
